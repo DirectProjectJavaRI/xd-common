@@ -18,7 +18,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.activation.DataHandler;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.transform.util.type.MimeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -54,8 +54,8 @@ import oasis.names.tc.ebxml_regrep.xsd.rim._3.SlotType1;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.nhindirect.xd.common.exception.MetadataException;
 import org.nhindirect.xd.common.type.ClassificationTypeEnum;
 import org.nhindirect.xd.common.type.ExternalIdentifierTypeEnum;

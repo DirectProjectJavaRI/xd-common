@@ -22,7 +22,7 @@ package org.nhindirect.xd.transform.parse;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.common.DirectDocuments;
 
 /**

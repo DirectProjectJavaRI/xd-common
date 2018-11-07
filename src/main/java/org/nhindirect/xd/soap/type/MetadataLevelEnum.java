@@ -28,7 +28,7 @@
 
 package org.nhindirect.xd.soap.type;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Enumeration representing valid metadata levels for the direct:metadata-level

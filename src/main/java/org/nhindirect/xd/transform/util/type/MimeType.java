@@ -28,7 +28,7 @@
 
 package org.nhindirect.xd.transform.util.type;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Enumeration of commonly used MIME types.

@@ -28,7 +28,7 @@
 
 package org.nhindirect.xd.common.type;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Enumeration for data identifying an External Identifier element.

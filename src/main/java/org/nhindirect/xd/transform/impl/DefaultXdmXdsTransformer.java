@@ -47,7 +47,7 @@ import oasis.names.tc.ebxml_regrep.xsd.rim._3.ExtrinsicObjectType;
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.IdentifiableType;
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.RegistryObjectListType;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.transform.XdmXdsTransformer;
 import org.nhindirect.xd.transform.exception.TransformationException;
 import org.nhindirect.xd.transform.util.XmlUtils;

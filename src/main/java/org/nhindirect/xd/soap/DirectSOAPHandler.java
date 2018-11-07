@@ -51,7 +51,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.soap.type.MetadataLevelEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

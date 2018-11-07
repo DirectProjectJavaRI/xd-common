@@ -30,7 +30,7 @@ package org.nhindirect.xd.soap;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.soap.ThreadData;
 
 import junit.framework.TestCase;
