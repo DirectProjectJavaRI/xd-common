@@ -132,6 +132,10 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
                 // edit Envelope
                 SOAPEnvelope env = sp.getEnvelope();
+		/* Remove old header */
+		if (env.getHeader() != null){
+                    env.getHeader().detachNode();
+                }
                 SOAPHeader sh = env.addHeader();
 
                 @SuppressWarnings("unused")
@@ -362,6 +366,8 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
         set.add(new QName("http://www.w3.org/2005/08/addressing", "To"));
         set.add(new QName("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd", "Security"));
 
+	/* Supporting ReplyTo in the addressing namespace */
+	set.add(new QName("http://www.w3.org/2005/08/addressing", "ReplyTo"));
         return set;
     }
 
