@@ -21,6 +21,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 package org.nhindirect.xd.transform.impl;
 
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,17 +43,14 @@ import org.nhindirect.xd.common.type.FormatCodeEnum;
 import org.nhindirect.xd.transform.MimeXdsTransformer;
 import org.nhindirect.xd.transform.exception.TransformationException;
 import org.nhindirect.xd.transform.util.type.MimeType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Transform a MimeMessage into a XDS request.
  * 
  * @author vlewis
  */
+@Slf4j
 public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultMimeXdsTransformer.class);	
 
     /**
      * Construct a new DefaultMimeXdsTransformer object.
@@ -84,7 +82,7 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
 
             // Plain mail (no attachments)
             if (MimeType.TEXT_PLAIN.matches(mimeMessage.getContentType())) {
-                LOGGER.info("Handling plain mail (no attachments) - " + mimeMessage.getContentType());
+                log.info("Handling plain mail (no attachments) - " + mimeMessage.getContentType());
 
                 // Get the document type
                 documentType = DirectDocumentType.lookup(mimeMessage);
@@ -101,7 +99,7 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
                 documents.setSubmissionSet(getSubmissionSet(subject, sentDate, from, recipients, xdsDocument, documentType));
             } // Multipart/mixed (attachments)
             else if (MimeType.MULTIPART.matches(mimeMessage.getContentType())) {
-                LOGGER.info("Handling multipart/mixed - " + mimeMessage.getContentType());
+                log.info("Handling multipart/mixed - " + mimeMessage.getContentType());
 
                 MimeMultipart mimeMultipart = (MimeMultipart) mimeMessage.getContent();
                BodyPart xdmBodyPart = null;
@@ -140,21 +138,21 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
                     BodyPart bodyPart = mimeMultipart.getBodyPart(i);
                     // Skip empty BodyParts
                     if (bodyPart.getSize() <= 0) {
-                        LOGGER.warn("Empty body, skipping");
+                        log.warn("Empty body, skipping");
                         continue;
                     }
 
                     // Get the document type
                     documentType = DirectDocumentType.lookup(bodyPart);
 
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("File name: " + bodyPart.getFileName());
+                    if (log.isInfoEnabled()) {
+                        log.info("File name: " + bodyPart.getFileName());
                     }
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("Content type: " + bodyPart.getContentType());
+                    if (log.isInfoEnabled()) {
+                        log.info("Content type: " + bodyPart.getContentType());
                     }
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("DocumentType: " + documentType.toString());
+                    if (log.isInfoEnabled()) {
+                        log.info("DocumentType: " + documentType.toString());
                     }
 
                   
@@ -176,23 +174,23 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
                     documents.setSubmissionSet(getSubmissionSet(subject, sentDate, from, recipients, xdsDocument, documentType));
                 }
             } else {
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("Message content type (" + mimeMessage.getContentType() + ") is not supported, skipping");
+                if (log.isWarnEnabled()) {
+                    log.warn("Message content type (" + mimeMessage.getContentType() + ") is not supported, skipping");
                 }
             }
         } catch (MessagingException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Unexpected MessagingException occured while handling MimeMessage", e);
+            if (log.isErrorEnabled()) {
+                log.error("Unexpected MessagingException occured while handling MimeMessage", e);
             }
             throw new TransformationException("Unable to complete transformation.", e);
         } catch (IOException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Unexpected IOException occured while handling MimeMessage", e);
+            if (log.isErrorEnabled()) {
+                log.error("Unexpected IOException occured while handling MimeMessage", e);
             }
             throw new TransformationException("Unable to complete transformation.", e);
         } catch (Exception e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Unexpected Exception occured while handling MimeMessage", e);
+            if (log.isErrorEnabled()) {
+                log.error("Unexpected Exception occured while handling MimeMessage", e);
             }
             throw new TransformationException("Unable to complete transformation", e);
         }
@@ -200,8 +198,8 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
         try {
             request = documents.toProvideAndRegisterDocumentSetRequestType();
         } catch (IOException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Unexpected IOException occured while transforming to ProvideAndRegisterDocumentSetRequestType", e);
+            if (log.isErrorEnabled()) {
+                log.error("Unexpected IOException occured while transforming to ProvideAndRegisterDocumentSetRequestType", e);
             }
             throw new TransformationException("Unable to complete transformation", e);
         }

@@ -28,58 +28,30 @@
 
 package org.nhindirect.xd.soap;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.PortInfo;
-
-import junit.framework.TestCase;
 
 /**
  * Test class for methods in DirectHandlerResolver.
  * 
  * @author beau
  */
-public class DirectSOAPHandlerResolverTest extends TestCase
+public class DirectSOAPHandlerResolverTest
 {
-
-    /**
-     * Constructor
-     * 
-     * @param testName
-     *            The test name
-     */
-    public DirectSOAPHandlerResolverTest(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
 
     /**
      * Test the getHandlerChain method.
      */
     @SuppressWarnings("rawtypes")
+    @Test
 	public void testGetHandlerChain()
     {
         PortInfo portInfo = null;
@@ -88,9 +60,9 @@ public class DirectSOAPHandlerResolverTest extends TestCase
 
         output = handler.getHandlerChain(portInfo);
 
-        assertNotNull("List is null", output);
-        assertTrue("List contains 0 elements", !output.isEmpty());
-        assertEquals("List contains more than expected elements", 1, output.size());
-        assertTrue("List does not contain expected element", output.get(0) instanceof DirectSOAPHandler);
+        assertNotNull(output);
+        assertTrue(!output.isEmpty());
+        assertEquals(1, output.size());
+        assertTrue(output.get(0) instanceof DirectSOAPHandler);
     }
 }

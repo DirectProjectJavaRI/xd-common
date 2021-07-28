@@ -28,65 +28,35 @@
 
 package org.nhindirect.xd.common;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.TestCase;
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.ExtrinsicObjectType;
 
 import org.nhindirect.xd.transform.pojo.SimplePerson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Unit tests for the DirectDocument2 class.
  * 
  * @author beau
  */
-public class DirectDocument2Test extends TestCase
+@Slf4j
+public class DirectDocument2Test
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(DirectDocument2Test.class);
-
-    /**
-     * Default constructor.
-     * 
-     * @param testName
-     *            The test name.
-     */
-    public DirectDocument2Test(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-
     /**
      * Test mimeType.
      * 
      * @throws Exception
      */
+	@Test
     public void testMimeType() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -100,7 +70,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getMimeType());
+        assertEquals(value, metadata.getMimeType());
     }
 
     /**
@@ -108,6 +78,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+	@Test
     public void testDescription() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -121,7 +92,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
         
-        assertEquals("Output does not match expected", value, metadata.getDescription());
+        assertEquals(value, metadata.getDescription());
     }
 
     /**
@@ -130,6 +101,7 @@ public class DirectDocument2Test extends TestCase
      * @throws Exception
      */
     @SuppressWarnings("deprecation")
+    @Test
 	public void testCreationTime() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -143,12 +115,12 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", date.getYear(), metadata.getCreationTime().getYear());
-        assertEquals("Output does not match expected", date.getMonth(), metadata.getCreationTime().getMonth());
-        assertEquals("Output does not match expected", date.getDate(), metadata.getCreationTime().getDate());
-        assertEquals("Output does not match expected", 0, metadata.getCreationTime().getHours());
-        assertEquals("Output does not match expected", 0, metadata.getCreationTime().getMinutes());
-        assertEquals("Output does not match expected", 0, metadata.getCreationTime().getSeconds());
+        assertEquals(date.getYear(), metadata.getCreationTime().getYear());
+        assertEquals(date.getMonth(), metadata.getCreationTime().getMonth());
+        assertEquals(date.getDate(), metadata.getCreationTime().getDate());
+        assertEquals(0, metadata.getCreationTime().getHours());
+        assertEquals(0, metadata.getCreationTime().getMinutes());
+        assertEquals(0, metadata.getCreationTime().getSeconds());
     }
 
     /**
@@ -156,6 +128,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testLanguageCode() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -169,7 +142,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getLanguageCode());
+        assertEquals(value, metadata.getLanguageCode());
     }
 
     /**
@@ -178,6 +151,7 @@ public class DirectDocument2Test extends TestCase
      * @throws Exception
      */
     @SuppressWarnings("deprecation")
+    @Test
 	public void testServiceStartTime() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -191,12 +165,12 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", date.getYear(), metadata.getServiceStartTime().getYear());
-        assertEquals("Output does not match expected", date.getMonth(), metadata.getServiceStartTime().getMonth());
-        assertEquals("Output does not match expected", date.getDate(), metadata.getServiceStartTime().getDate());
-        assertEquals("Output does not match expected", date.getHours(), metadata.getServiceStartTime().getHours());
-        assertEquals("Output does not match expected", date.getMinutes(), metadata.getServiceStartTime().getMinutes());
-        assertEquals("Output does not match expected", 0, metadata.getServiceStartTime().getSeconds());
+        assertEquals(date.getYear(), metadata.getServiceStartTime().getYear());
+        assertEquals(date.getMonth(), metadata.getServiceStartTime().getMonth());
+        assertEquals(date.getDate(), metadata.getServiceStartTime().getDate());
+        assertEquals(date.getHours(), metadata.getServiceStartTime().getHours());
+        assertEquals(date.getMinutes(), metadata.getServiceStartTime().getMinutes());
+        assertEquals(0, metadata.getServiceStartTime().getSeconds());
     }
 
     /**
@@ -205,6 +179,7 @@ public class DirectDocument2Test extends TestCase
      * @throws Exception
      */
     @SuppressWarnings("deprecation")
+    @Test
 	public void testServiceStopTime() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -218,12 +193,12 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", date.getYear(), metadata.getServiceStopTime().getYear());
-        assertEquals("Output does not match expected", date.getMonth(), metadata.getServiceStopTime().getMonth());
-        assertEquals("Output does not match expected", date.getDate(), metadata.getServiceStopTime().getDate());
-        assertEquals("Output does not match expected", date.getHours(), metadata.getServiceStopTime().getHours());
-        assertEquals("Output does not match expected", date.getMinutes(), metadata.getServiceStopTime().getMinutes());
-        assertEquals("Output does not match expected", 0, metadata.getServiceStopTime().getSeconds());
+        assertEquals(date.getYear(), metadata.getServiceStopTime().getYear());
+        assertEquals(date.getMonth(), metadata.getServiceStopTime().getMonth());
+        assertEquals(date.getDate(), metadata.getServiceStopTime().getDate());
+        assertEquals(date.getHours(), metadata.getServiceStopTime().getHours());
+        assertEquals(date.getMinutes(), metadata.getServiceStopTime().getMinutes());
+        assertEquals(0, metadata.getServiceStopTime().getSeconds());
     }
 
     /**
@@ -256,17 +231,17 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", sourcePatient.getFirstName(), metadata.getSourcePatient().getFirstName());
-        assertEquals("Output does not match expected", sourcePatient.getMiddleName(), metadata.getSourcePatient().getMiddleName());
-        assertEquals("Output does not match expected", sourcePatient.getLastName(), metadata.getSourcePatient().getLastName());
-        assertEquals("Output does not match expected", sourcePatient.getLocalId(), metadata.getSourcePatient().getLocalId());
-        assertEquals("Output does not match expected", sourcePatient.getLocalOrg(), metadata.getSourcePatient().getLocalOrg());
-        assertEquals("Output does not match expected", sourcePatient.getBirthDateTime(), metadata.getSourcePatient().getBirthDateTime());
-        assertEquals("Output does not match expected", sourcePatient.getGenderCode(), metadata.getSourcePatient().getGenderCode());
-        assertEquals("Output does not match expected", sourcePatient.getStreetAddress1(), metadata.getSourcePatient().getStreetAddress1());
-        assertEquals("Output does not match expected", sourcePatient.getCity(), metadata.getSourcePatient().getCity());
-        assertEquals("Output does not match expected", sourcePatient.getState(), metadata.getSourcePatient().getState());
-        assertEquals("Output does not match expected", sourcePatient.getZipCode(), metadata.getSourcePatient().getZipCode());
+        assertEquals(sourcePatient.getFirstName(), metadata.getSourcePatient().getFirstName());
+        assertEquals(sourcePatient.getMiddleName(), metadata.getSourcePatient().getMiddleName());
+        assertEquals(sourcePatient.getLastName(), metadata.getSourcePatient().getLastName());
+        assertEquals(sourcePatient.getLocalId(), metadata.getSourcePatient().getLocalId());
+        assertEquals(sourcePatient.getLocalOrg(), metadata.getSourcePatient().getLocalOrg());
+        assertEquals(sourcePatient.getBirthDateTime(), metadata.getSourcePatient().getBirthDateTime());
+        assertEquals(sourcePatient.getGenderCode(), metadata.getSourcePatient().getGenderCode());
+        assertEquals(sourcePatient.getStreetAddress1(), metadata.getSourcePatient().getStreetAddress1());
+        assertEquals(sourcePatient.getCity(), metadata.getSourcePatient().getCity());
+        assertEquals(sourcePatient.getState(), metadata.getSourcePatient().getState());
+        assertEquals(sourcePatient.getZipCode(), metadata.getSourcePatient().getZipCode());
     }
 */
     /**
@@ -274,6 +249,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testAuthorPerson() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -287,7 +263,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getAuthorPerson());
+        assertEquals(value, metadata.getAuthorPerson());
     }
 
     /**
@@ -295,6 +271,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testAuthorInstitution() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -308,8 +285,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", values.get(0), metadata.getAuthorInstitution().get(0));
-        assertEquals("Output does not match expected", values.get(1), metadata.getAuthorInstitution().get(1));
+        assertEquals(values.get(0), metadata.getAuthorInstitution().get(0));
+        assertEquals(values.get(1), metadata.getAuthorInstitution().get(1));
     }
 
     /**
@@ -317,6 +294,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testAuthorRole() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -330,7 +308,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getAuthorRole());
+        assertEquals(value, metadata.getAuthorRole());
     }
 
     /**
@@ -338,6 +316,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testAuthorSpecialty() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -351,7 +330,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getAuthorSpecialty());
+        assertEquals(value, metadata.getAuthorSpecialty());
     }
 
     /**
@@ -359,6 +338,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testClassCode() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -372,8 +352,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getClassCode());
-        assertEquals("Output does not match expected", null, metadata.getClassCode_localized());
+        assertEquals(value, metadata.getClassCode());
+        assertEquals(null, metadata.getClassCode_localized());
         
         metadata.setClassCode(value, true);
 
@@ -382,8 +362,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getClassCode());
-        assertEquals("Output does not match expected", value, metadata.getClassCode_localized());
+        assertEquals(value, metadata.getClassCode());
+        assertEquals(value, metadata.getClassCode_localized());
     }
 
     /**
@@ -391,6 +371,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testClassCode_localized() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -405,7 +386,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getClassCode_localized());
+        assertEquals(value, metadata.getClassCode_localized());
     }
 
     /**
@@ -413,6 +394,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testConfidentialityCode() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -426,8 +408,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getConfidentialityCode());
-        assertEquals("Output does not match expected", null, metadata.getConfidentialityCode_localized());
+        assertEquals(value, metadata.getConfidentialityCode());
+        assertEquals(null, metadata.getConfidentialityCode_localized());
         
         metadata.setConfidentialityCode(value, true);
 
@@ -436,8 +418,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getConfidentialityCode());
-        assertEquals("Output does not match expected", value, metadata.getConfidentialityCode_localized());
+        assertEquals(value, metadata.getConfidentialityCode());
+        assertEquals(value, metadata.getConfidentialityCode_localized());
     }
 
     /**
@@ -445,6 +427,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testConfidentialityCode_localized() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -459,7 +442,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getConfidentialityCode_localized());
+        assertEquals(value, metadata.getConfidentialityCode_localized());
     }
 
     /**
@@ -467,6 +450,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testFormatCode() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -480,8 +464,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getFormatCode());
-        assertEquals("Output does not match expected", null, metadata.getFormatCode_localized());        
+        assertEquals(value, metadata.getFormatCode());
+        assertEquals(null, metadata.getFormatCode_localized());        
 
         metadata.setFormatCode(value, true);
 
@@ -490,8 +474,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getFormatCode());
-        assertEquals("Output does not match expected", value, metadata.getFormatCode_localized());    
+        assertEquals(value, metadata.getFormatCode());
+        assertEquals(value, metadata.getFormatCode_localized());    
     }
 
     /**
@@ -499,6 +483,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testFormatCode_localized() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -513,7 +498,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getFormatCode_localized());
+        assertEquals(value, metadata.getFormatCode_localized());
     }
 
     /**
@@ -521,6 +506,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testHealthcareFacilityTypeCode() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -534,8 +520,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getHealthcareFacilityTypeCode());
-        assertEquals("Output does not match expected", null, metadata.getHealthcareFacilityTypeCode_localized());
+        assertEquals(value, metadata.getHealthcareFacilityTypeCode());
+        assertEquals(null, metadata.getHealthcareFacilityTypeCode_localized());
         
         metadata.setHealthcareFacilityTypeCode(value, true);
 
@@ -544,8 +530,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getHealthcareFacilityTypeCode());
-        assertEquals("Output does not match expected", value, metadata.getHealthcareFacilityTypeCode_localized());
+        assertEquals(value, metadata.getHealthcareFacilityTypeCode());
+        assertEquals(value, metadata.getHealthcareFacilityTypeCode_localized());
     }
 
     /**
@@ -553,6 +539,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testHealthcareFacilityTypeCode_localized() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -567,7 +554,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getHealthcareFacilityTypeCode_localized());
+        assertEquals(value, metadata.getHealthcareFacilityTypeCode_localized());
     }
 
     /**
@@ -575,6 +562,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testPracticeSettingCode() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -588,8 +576,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getPracticeSettingCode());
-        assertEquals("Output does not match expected", null, metadata.getPracticeSettingCode_localized());
+        assertEquals(value, metadata.getPracticeSettingCode());
+        assertEquals(null, metadata.getPracticeSettingCode_localized());
         
         metadata.setPracticeSettingCode(value, true);
 
@@ -598,8 +586,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getPracticeSettingCode());
-        assertEquals("Output does not match expected", value, metadata.getPracticeSettingCode_localized());
+        assertEquals(value, metadata.getPracticeSettingCode());
+        assertEquals(value, metadata.getPracticeSettingCode_localized());
     }
 
     /**
@@ -607,6 +595,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testPracticeSettingCode_localized() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -621,7 +610,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getPracticeSettingCode_localized());
+        assertEquals(value, metadata.getPracticeSettingCode_localized());
     }
 
     /**
@@ -629,6 +618,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testLoinc() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -642,8 +632,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getLoinc());
-        assertEquals("Output does not match expected", null, metadata.getLoinc_localized());
+        assertEquals(value, metadata.getLoinc());
+        assertEquals(null, metadata.getLoinc_localized());
 
         metadata.setLoinc(value, true);
 
@@ -652,8 +642,8 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getLoinc());
-        assertEquals("Output does not match expected", value, metadata.getLoinc_localized());
+        assertEquals(value, metadata.getLoinc());
+        assertEquals(value, metadata.getLoinc_localized());
     }
 
     /**
@@ -661,6 +651,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testLoinc_localized() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -675,7 +666,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getLoinc_localized());
+        assertEquals(value, metadata.getLoinc_localized());
     }
 
     /**
@@ -683,6 +674,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testPatientId() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -696,7 +688,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getPatientId());
+        assertEquals(value, metadata.getPatientId());
     }
 
     /**
@@ -704,6 +696,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testUniqueId() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -717,7 +710,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getUniqueId());
+        assertEquals(value, metadata.getUniqueId());
     }
 
     /**
@@ -725,6 +718,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testHash() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -738,9 +732,11 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getHash());
+        assertEquals(value, metadata.getHash());
     }
-        public void testURI() throws Exception
+    
+    @Test
+    public void testURI() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
         DirectDocument2.Metadata metadata = document.getMetadata();
@@ -753,7 +749,7 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getURI());
+        assertEquals(value, metadata.getURI());
     }
 
     /**
@@ -761,6 +757,7 @@ public class DirectDocument2Test extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testSize() throws Exception
     {
         DirectDocument2 document = new DirectDocument2();
@@ -774,12 +771,13 @@ public class DirectDocument2Test extends TestCase
         metadata = new DirectDocument2.Metadata();
         metadata.setValues(eot);
 
-        assertEquals("Output does not match expected", value, metadata.getSize());
+        assertEquals(value, metadata.getSize());
     }
     
     /**
      * Generic setter test.
      */
+    @Test
     public void testDirectDocument2Metadata()
     {
         DirectDocument2 document = new DirectDocument2();
@@ -824,36 +822,36 @@ public class DirectDocument2Test extends TestCase
 
     private void displayMetadata(DirectDocument2.Metadata metadata)
     {
-        LOGGER.info("mimeType                               " + metadata.getMimeType());
-        LOGGER.info("id                                     " + metadata.getId());
-        LOGGER.info("description                            " + metadata.getDescription());
-        LOGGER.info("creationTime                           " + metadata.getCreationTime());
-        LOGGER.info("languageCode                           " + metadata.getLanguageCode());
-        LOGGER.info("serviceStartTime                       " + metadata.getServiceStartTime());
-        LOGGER.info("serviceStopTime                        " + metadata.getServiceStopTime());
-        LOGGER.info("sourcePatient                          " + metadata.getSourcePatient().getLastName() + ", " + metadata.getSourcePatient().getFirstName());
-        LOGGER.info("authorPerson                           " + metadata.getAuthorPerson());
-        LOGGER.info("authorInstitution                      " + metadata.getAuthorInstitution());
-        LOGGER.info("authorRole                             " + metadata.getAuthorRole());
-        LOGGER.info("authorSpecialty                        " + metadata.getAuthorSpecialty());
-        LOGGER.info("classCode                              " + metadata.getClassCode());
-        LOGGER.info("classCode_localized                    " + metadata.getClassCode_localized());
-        LOGGER.info("confidentialityCode                    " + metadata.getConfidentialityCode());
-        LOGGER.info("confidentialityCode_localized          " + metadata.getConfidentialityCode_localized());
-        LOGGER.info("formatCode                             " + metadata.getFormatCode());
-        LOGGER.info("formatCode_localized                   " + metadata.getFormatCode_localized());
-        LOGGER.info("healthcareFacilityTypeCode             " + metadata.getHealthcareFacilityTypeCode());
-        LOGGER.info("healthcareFacilityTypeCode_localized   " + metadata.getHealthcareFacilityTypeCode_localized());
-        LOGGER.info("practiceSettingCode                    " + metadata.getPracticeSettingCode());
-        LOGGER.info("practiceSettingCode_localized          " + metadata.getPracticeSettingCode_localized());
-        LOGGER.info("loinc                                  " + metadata.getLoinc());
-        LOGGER.info("loinc_localized                        " + metadata.getLoinc_localized());
-        LOGGER.info("patientId                              " + metadata.getPatientId());
-        LOGGER.info("uniqueId                               " + metadata.getUniqueId());
-        LOGGER.info("hash                                   " + metadata.getHash());
-        LOGGER.info("size                                   " + metadata.getSize());
-        LOGGER.info("submissionSetStatus                    " + metadata.getSubmissionSetStatus());
+        log.info("mimeType                               " + metadata.getMimeType());
+        log.info("id                                     " + metadata.getId());
+        log.info("description                            " + metadata.getDescription());
+        log.info("creationTime                           " + metadata.getCreationTime());
+        log.info("languageCode                           " + metadata.getLanguageCode());
+        log.info("serviceStartTime                       " + metadata.getServiceStartTime());
+        log.info("serviceStopTime                        " + metadata.getServiceStopTime());
+        log.info("sourcePatient                          " + metadata.getSourcePatient().getLastName() + ", " + metadata.getSourcePatient().getFirstName());
+        log.info("authorPerson                           " + metadata.getAuthorPerson());
+        log.info("authorInstitution                      " + metadata.getAuthorInstitution());
+        log.info("authorRole                             " + metadata.getAuthorRole());
+        log.info("authorSpecialty                        " + metadata.getAuthorSpecialty());
+        log.info("classCode                              " + metadata.getClassCode());
+        log.info("classCode_localized                    " + metadata.getClassCode_localized());
+        log.info("confidentialityCode                    " + metadata.getConfidentialityCode());
+        log.info("confidentialityCode_localized          " + metadata.getConfidentialityCode_localized());
+        log.info("formatCode                             " + metadata.getFormatCode());
+        log.info("formatCode_localized                   " + metadata.getFormatCode_localized());
+        log.info("healthcareFacilityTypeCode             " + metadata.getHealthcareFacilityTypeCode());
+        log.info("healthcareFacilityTypeCode_localized   " + metadata.getHealthcareFacilityTypeCode_localized());
+        log.info("practiceSettingCode                    " + metadata.getPracticeSettingCode());
+        log.info("practiceSettingCode_localized          " + metadata.getPracticeSettingCode_localized());
+        log.info("loinc                                  " + metadata.getLoinc());
+        log.info("loinc_localized                        " + metadata.getLoinc_localized());
+        log.info("patientId                              " + metadata.getPatientId());
+        log.info("uniqueId                               " + metadata.getUniqueId());
+        log.info("hash                                   " + metadata.getHash());
+        log.info("size                                   " + metadata.getSize());
+        log.info("submissionSetStatus                    " + metadata.getSubmissionSetStatus());
         
-        LOGGER.info(metadata.toString());
+        log.info(metadata.toString());
     }
 }

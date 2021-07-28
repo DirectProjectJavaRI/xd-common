@@ -28,7 +28,10 @@
 
 package org.nhindirect.xd.transform.util;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 import org.nhindirect.xd.transform.util.type.MimeType;
 
@@ -37,74 +40,42 @@ import org.nhindirect.xd.transform.util.type.MimeType;
  * 
  * @author beau
  */
-public class MimeTypeTest extends TestCase
+public class MimeTypeTest
 {
-
-    /**
-     * Constructor.
-     * 
-     * @param testName
-     *            The test name
-     */
-    public MimeTypeTest(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-
     /**
      * Test the getType method;
      */
+	@Test
     public void testGetType()
     {
         String s = "application/ccr";
         MimeType m = MimeType.APPLICATION_CCR;
 
-        assertEquals("Get method did not return expected value", s, m.getType());
+        assertEquals(s, m.getType());
     }
 
     /**
      * Test the matches method.
      */
+	@Test
     public void testMatches()
     {
         // Test matches works for all values
         for (MimeType m : MimeType.values())
         {
-            assertTrue("Matches method does not correctly match elements", m.matches(m.getType()));
+            assertTrue(m.matches(m.getType()));
         }
 
         String s = null;
         MimeType m = MimeType.TEXT_PLAIN;
 
         s = "text";
-        assertEquals("Output does not match expected", false, m.matches(s));
+        assertEquals(false, m.matches(s));
 
         s = "text/plain";
-        assertEquals("Output does not match expected", true, m.matches(s));
+        assertEquals(true, m.matches(s));
 
         s = "text/plain; charset=UTF-8";
-        assertEquals("Output does not match expected", true, m.matches(s));
+        assertEquals(true, m.matches(s));
     }
 }

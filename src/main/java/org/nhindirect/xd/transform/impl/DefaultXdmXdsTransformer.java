@@ -22,6 +22,7 @@ package org.nhindirect.xd.transform.impl;
 
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType.Document;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -52,19 +53,17 @@ import org.nhindirect.xd.transform.XdmXdsTransformer;
 import org.nhindirect.xd.transform.exception.TransformationException;
 import org.nhindirect.xd.transform.util.XmlUtils;
 import org.nhindirect.xd.transform.util.type.MimeType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class handles the transformation of XDM to XDS.
  * 
  * @author vlewis
  */
+@Slf4j
 public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
 
     private static String XDM_FILENAME_DATA = "DOCUMENT.xml";
     private static final String XDM_FILENAME_METADATA = "METADATA.xml";
-	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultXdmXdsTransformer.class);	
 
     /*
      * (non-Javadoc)
@@ -73,7 +72,7 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
      */
     @Override
     public ProvideAndRegisterDocumentSetRequestType transform(File file) throws TransformationException {
-        LOGGER.trace("Begin transformation of XDM to XDS (file)");
+        log.trace("Begin transformation of XDM to XDS (file)");
 
         String docId = null;
         ZipFile zipFile = null;
@@ -96,7 +95,7 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
 
                 zipEntry = zipEntries.nextElement();
                 String zname = zipEntry.getName();
-                LOGGER.trace("Processing a ZipEntry " + zname);
+                log.trace("Processing a ZipEntry " + zname);
                 if (!zipEntry.isDirectory()) {
                     String subsetDirspec = getSubmissionSetDirspec(zipEntry.getName());
 
@@ -135,8 +134,8 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
 
             zipFile.close();
         } catch (Exception e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Unable to complete transformation.", e);
+            if (log.isErrorEnabled()) {
+                log.error("Unable to complete transformation.", e);
             }
             throw new TransformationException("Unable to complete transformation.", e);
         }
@@ -145,7 +144,7 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
     }
 
     public String getDocName(File file) throws TransformationException {
-        LOGGER.trace("Begin transformation of XDM to XDS (file)");
+        log.trace("Begin transformation of XDM to XDS (file)");
 
 
         ZipFile zipFile = null;
@@ -165,7 +164,7 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
 
                 zipEntry = zipEntries.nextElement();
                 String zname = zipEntry.getName();
-                LOGGER.trace("Processing a ZipEntry " + zname);
+                log.trace("Processing a ZipEntry " + zname);
                 if (!zipEntry.isDirectory()) {
                     String subsetDirspec = getSubmissionSetDirspec(zipEntry.getName());
 
@@ -186,8 +185,8 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
             }
             zipFile.close();
         } catch (Exception e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Unable to complete getObjectId.", e);
+            if (log.isErrorEnabled()) {
+                log.error("Unable to complete getObjectId.", e);
             }
             throw new TransformationException("Unable to complete getObjectId.", e);
         }
@@ -204,7 +203,7 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
      */
     @Override
     public ProvideAndRegisterDocumentSetRequestType transform(DataHandler dataHandler) throws TransformationException {
-        LOGGER.trace("Begin transformation of XDM to XDS (datahandler)");
+        log.trace("Begin transformation of XDM to XDS (datahandler)");
 
         File file = null;
 
@@ -212,8 +211,8 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
             // Create a temporary work file
             file = fileFromDataHandler(dataHandler);
         } catch (Exception e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Error creating temporary work file, unable to complete transformation.", e);
+            if (log.isErrorEnabled()) {
+                log.error("Error creating temporary work file, unable to complete transformation.", e);
             }
             throw new TransformationException("Error creating temporary work file, unable to complete transformation.",
                     e);
@@ -224,12 +223,12 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
         boolean delete = file.delete();
 
         if (delete) {
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("Deleted temporary work file " + file.getAbsolutePath());
+            if (log.isTraceEnabled()) {
+                log.trace("Deleted temporary work file " + file.getAbsolutePath());
             }
         } else {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("Unable to delete temporary work file " + file.getAbsolutePath());
+            if (log.isWarnEnabled()) {
+                log.warn("Unable to delete temporary work file " + file.getAbsolutePath());
             }
         }
 
@@ -262,8 +261,8 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
                 ret = getDocId((ExtrinsicObjectType) value);
             }
 
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace(type + " " + value.toString());
+            if (log.isTraceEnabled()) {
+                log.trace(type + " " + value.toString());
             }
         }
 
@@ -295,8 +294,8 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
                 }
                 ret = obId + "." + suffix;
 
-                if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace(type + " " + value.toString());
+                if (log.isTraceEnabled()) {
+                    log.trace(type + " " + value.toString());
                 }
             }
         }
@@ -398,8 +397,8 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
 
         in.close();
 
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("Data read: " + baos.toString());
+        if (log.isTraceEnabled()) {
+            log.trace("Data read: " + baos.toString());
         }
 
         return baos;
@@ -430,13 +429,13 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
                 out.write(buf, 0, len);
             }
         } catch (FileNotFoundException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("File not found - " + fileName, e);
+            if (log.isErrorEnabled()) {
+                log.error("File not found - " + fileName, e);
             }
             throw e;
         } catch (IOException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Exception thrown while trying to read file from DataHandler object", e);
+            if (log.isErrorEnabled()) {
+                log.error("Exception thrown while trying to read file from DataHandler object", e);
             }
             throw e;
         } finally {
@@ -448,8 +447,8 @@ public class DefaultXdmXdsTransformer implements XdmXdsTransformer {
             }
         }
 
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("Created temporary work file " + f.getAbsolutePath());
+        if (log.isTraceEnabled()) {
+            log.trace("Created temporary work file " + f.getAbsolutePath());
         }
 
         return f;

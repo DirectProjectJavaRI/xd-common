@@ -28,13 +28,13 @@
 
 package org.nhindirect.xd.common;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
-
-import junit.framework.TestCase;
 
 import org.nhindirect.xd.common.type.ClassCodeEnum;
 import org.nhindirect.xd.common.type.FormatCodeEnum;
@@ -49,12 +49,13 @@ import org.nhindirect.xd.transform.util.type.MimeType;
  * 
  * @author beau
  */
-public class XdmPackageTest extends TestCase
+public class XdmPackageTest
 {
     
     /**
      * Test the XdmPackage class.
      */
+	@Test
     public void testXdmPackage()
     {
         XdmPackage xdmPackage = new XdmPackage(UUID.randomUUID().toString());
@@ -152,6 +153,7 @@ public class XdmPackageTest extends TestCase
      * 
      * @throws Exception
      */
+	@Test
     public void testFromFile() throws Exception
     {
         URL url = XdmPackageTest.class.getClassLoader().getResource("samplexdm.zip");

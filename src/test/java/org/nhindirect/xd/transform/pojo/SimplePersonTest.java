@@ -28,57 +28,23 @@
 
 package org.nhindirect.xd.transform.pojo;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.nhindirect.xd.transform.pojo.SimplePerson;
-
-import junit.framework.TestCase;
 
 /**
  * Test class for the methods in the SimplePerson class.
  * 
  * @author beau
  */
-public class SimplePersonTest extends TestCase
+public class SimplePersonTest
 {
-
-    /**
-     * Constructor
-     * 
-     * @param testName
-     *            The test name
-     */
-    public SimplePersonTest(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-
     /**
      * Test methods in the SimplePerson class.
      */
+	@Test
     public void testSimplePerson()
     {
         SimplePerson person = new SimplePerson();
@@ -157,45 +123,45 @@ public class SimplePersonTest extends TestCase
         person.setPhoneExt(phoneExt);
         person.setOtherOrgIds(otherOrgIds);
 
-        assertEquals("Actual value does not match expected", firstName, person.getFirstName());
-        assertEquals("Actual value does not match expected", lastName, person.getLastName());
-        assertEquals("Actual value does not match expected", middleName, person.getMiddleName());
-        assertEquals("Actual value does not match expected", streetAddress1, person.getStreetAddress1());
-        assertEquals("Actual value does not match expected", streetAddress2, person.getStreetAddress2());
-        assertEquals("Actual value does not match expected", telephone, person.getTelephone());
-        assertEquals("Actual value does not match expected", birthDateTime, person.getBirthDateTime());
-        assertEquals("Actual value does not match expected", languageCode, person.getLanguageCode());
-        assertEquals("Actual value does not match expected", ethnicityCode, person.getEthnicityCode());
-        assertEquals("Actual value does not match expected", age, person.getAge());
-        assertEquals("Actual value does not match expected", ageUnits, person.getAgeUnits());
-        assertEquals("Actual value does not match expected", genderCode, person.getGenderCode());
-        assertEquals("Actual value does not match expected", zipCode, person.getZipCode());
-        assertEquals("Actual value does not match expected", state, person.getState());
-        assertEquals("Actual value does not match expected", county, person.getCounty());
-        assertEquals("Actual value does not match expected", city, person.getCity());
-        assertEquals("Actual value does not match expected", country, person.getCountry());
-        assertEquals("Actual value does not match expected", pcpOid, person.getPcpOid());
-        assertEquals("Actual value does not match expected", pcpName, person.getPcpName());
-        assertEquals("Actual value does not match expected", ethnicityCodeSystem, person.getEthnicityCodeSystem());
-        assertEquals("Actual value does not match expected", ethnicityCodeName, person.getEthnicityCodeName());
-        assertEquals("Actual value does not match expected", genderCodeSystem, person.getGenderCodeSystem());
-        assertEquals("Actual value does not match expected", patientEuid, person.getPatientEuid());
-        assertEquals("Actual value does not match expected", localId, person.getLocalId());
-        assertEquals("Actual value does not match expected", localOrg, person.getLocalOrg());
-        assertEquals("Actual value does not match expected", ssn, person.getSsn());
-        assertEquals("Actual value does not match expected", npi, person.getNpi());
-        assertEquals("Actual value does not match expected", email, person.getEmail());
-        assertEquals("Actual value does not match expected", department, person.getDepartment());
-        assertEquals("Actual value does not match expected", suffix, person.getSuffix());
-        assertEquals("Actual value does not match expected", title, person.getTitle());
-        assertEquals("Actual value does not match expected", systemCode, person.getSystemCode());
-        assertEquals("Actual value does not match expected", systemName, person.getSystemName());
-        assertEquals("Actual value does not match expected", phoneExt, person.getPhoneExt());
-        assertEquals("Actual value does not match expected", otherOrgIds, person.getOtherOrgIds());
+        assertEquals(firstName, person.getFirstName());
+        assertEquals(lastName, person.getLastName());
+        assertEquals(middleName, person.getMiddleName());
+        assertEquals(streetAddress1, person.getStreetAddress1());
+        assertEquals(streetAddress2, person.getStreetAddress2());
+        assertEquals(telephone, person.getTelephone());
+        assertEquals(birthDateTime, person.getBirthDateTime());
+        assertEquals(languageCode, person.getLanguageCode());
+        assertEquals(ethnicityCode, person.getEthnicityCode());
+        assertEquals(age, person.getAge());
+        assertEquals(ageUnits, person.getAgeUnits());
+        assertEquals(genderCode, person.getGenderCode());
+        assertEquals(zipCode, person.getZipCode());
+        assertEquals(state, person.getState());
+        assertEquals(county, person.getCounty());
+        assertEquals(city, person.getCity());
+        assertEquals(country, person.getCountry());
+        assertEquals(pcpOid, person.getPcpOid());
+        assertEquals(pcpName, person.getPcpName());
+        assertEquals(ethnicityCodeSystem, person.getEthnicityCodeSystem());
+        assertEquals(ethnicityCodeName, person.getEthnicityCodeName());
+        assertEquals(genderCodeSystem, person.getGenderCodeSystem());
+        assertEquals(patientEuid, person.getPatientEuid());
+        assertEquals(localId, person.getLocalId());
+        assertEquals(localOrg, person.getLocalOrg());
+        assertEquals(ssn, person.getSsn());
+        assertEquals(npi, person.getNpi());
+        assertEquals(email, person.getEmail());
+        assertEquals(department, person.getDepartment());
+        assertEquals(suffix, person.getSuffix());
+        assertEquals(title, person.getTitle());
+        assertEquals(systemCode, person.getSystemCode());
+        assertEquals(systemName, person.getSystemName());
+        assertEquals(phoneExt, person.getPhoneExt());
+        assertEquals(otherOrgIds, person.getOtherOrgIds());
 
         person.setSsn(null);
         person.setSSN(ssn);
 
-        assertEquals("Actual value does not match expected", ssn, person.getSSN());
+        assertEquals(ssn, person.getSSN());
     }
 }

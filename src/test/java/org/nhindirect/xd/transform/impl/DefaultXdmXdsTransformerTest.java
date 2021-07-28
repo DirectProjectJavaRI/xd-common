@@ -28,7 +28,14 @@
 
 package org.nhindirect.xd.transform.impl;
 
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.net.URL;
@@ -38,7 +45,6 @@ import javax.activation.DataHandler;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
-import junit.framework.TestCase;
 import oasis.names.tc.ebxml_regrep.xsd.lcm._3.SubmitObjectsRequest;
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.ExternalIdentifierType;
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.ExtrinsicObjectType;
@@ -46,56 +52,19 @@ import oasis.names.tc.ebxml_regrep.xsd.rim._3.IdentifiableType;
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.RegistryObjectListType;
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.RegistryPackageType;
 
-import org.nhindirect.xd.transform.impl.DefaultXdmXdsTransformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Test methods in the DefaultXdmXdsTransformer class.
  * 
  * @author beau
  */
-public class DefaultXdmXdsTransformerTest extends TestCase
+@Slf4j
+public class DefaultXdmXdsTransformerTest
 {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultXdmXdsTransformerTest.class);
-
-    /**
-     * Default constructor.
-     * 
-     * @param testName
-     *            The test name.
-     */
-    public DefaultXdmXdsTransformerTest(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
 
     /**
      * Test the matchName method.
      */
+	@Test
     public void testMatchName()
     {
         DefaultXdmXdsTransformer transformer = new DefaultXdmXdsTransformer();
@@ -110,24 +79,25 @@ public class DefaultXdmXdsTransformerTest extends TestCase
         subsetDirspec = "SUBSETDIRSPEC";
         subsetFilespec = "FILE/SPEC";
         output = transformer.matchName(zname, subsetDirspec, subsetFilespec);
-        assertEquals("Output does not match expected", true, output);
+        assertEquals(true, output);
 
         zname = "SUBSETDIRSPEC/FILE/SPEC";
         subsetDirspec = "SUBSETDIRSPEC";
         subsetFilespec = "FILE/SPEC";
         output = transformer.matchName(zname, subsetDirspec, subsetFilespec);
-        assertEquals("Output does not match expected", true, output);
+        assertEquals(true, output);
 
         zname = "ZNAME";
         subsetDirspec = "SUBSETDIRSPEC";
         subsetFilespec = "FILE/SPEC";
         output = transformer.matchName(zname, subsetDirspec, subsetFilespec);
-        assertEquals("Output does not match expected", false, output);
+        assertEquals(false, output);
     }
 
     /**
      * Test the getSubmissionSetDirspec method.
      */
+	@Test
     public void testGetSubmissionSetDirspec()
     {
         DefaultXdmXdsTransformer transformer = new DefaultXdmXdsTransformer();
@@ -137,28 +107,29 @@ public class DefaultXdmXdsTransformerTest extends TestCase
 
         input = "123";
         output = transformer.getSubmissionSetDirspec(input);
-        assertEquals("Output does not match expected", "", output);
+        assertEquals("", output);
 
         input = "123\\456";
         output = transformer.getSubmissionSetDirspec(input);
-        assertEquals("Output does not match expected", "123", output);
+        assertEquals("123", output);
 
         input = "123\\456\\789";
         output = transformer.getSubmissionSetDirspec(input);
-        assertEquals("Output does not match expected", "123/456", output);
+        assertEquals("123/456", output);
 
         input = "";
         output = transformer.getSubmissionSetDirspec(input);
-        assertEquals("Output does not match expected", "", output);
+        assertEquals("", output);
 
         input = null;
         output = transformer.getSubmissionSetDirspec(input);
-        assertEquals("Output does not match expected", null, output);
+        assertEquals(null, output);
     }
 
     /**
      * Test the getDocId(ExtrinsicObjectType) method.
      */
+	@Test
     public void testGetDocId_ExtrinsicObjectType()
     {
         DefaultXdmXdsTransformer transformer = new DefaultXdmXdsTransformer();
@@ -177,7 +148,7 @@ public class DefaultXdmXdsTransformerTest extends TestCase
         externalIdentifiers.add(eit);
 
         output = transformer.getDocId(input);
-        assertEquals("Output does not match expected", "eitValue", output);
+        assertEquals("eitValue", output);
 
         eit = new ExternalIdentifierType();
         eit.setIdentificationScheme("urn:uuid:incorrecd-uuid");
@@ -188,18 +159,19 @@ public class DefaultXdmXdsTransformerTest extends TestCase
         externalIdentifiers.add(eit);
 
         output = transformer.getDocId(input);
-        assertEquals("Output does not match expected", null, output);
+        assertEquals(null, output);
 
         input = new ExtrinsicObjectType();
         externalIdentifiers = input.getExternalIdentifier();
 
         output = transformer.getDocId(input);
-        assertEquals("Output does not match expected", null, output);
+        assertEquals(null, output);
     }
 
     /**
      * Test the getDocId(SubmitObjectsRequest) method.
      */
+	@Test
     public void testGetDocId_SubmitObjectsRequest()
     {
         DefaultXdmXdsTransformer transformer = new DefaultXdmXdsTransformer();
@@ -244,7 +216,7 @@ public class DefaultXdmXdsTransformerTest extends TestCase
         input.setRegistryObjectList(registryObject);
 
         output = transformer.getDocId(input);
-        assertEquals("Output does not match expected", "eitValue", output);
+        assertEquals("eitValue", output);
 
         registryObject = new RegistryObjectListType();
 
@@ -252,15 +224,16 @@ public class DefaultXdmXdsTransformerTest extends TestCase
         input.setRegistryObjectList(registryObject);
 
         output = transformer.getDocId(input);
-        assertEquals("Output does not match expected", null, output);
+        assertEquals(null, output);
     }
 
     /**
      * Test the getXDMRequest method.
      */
+	@Test
     public void testGetXDMRequest_File()
     {
-        LOGGER.info("Begin testGetXDMRequest_File");
+        log.info("Begin testGetXDMRequest_File");
 
         DefaultXdmXdsTransformer transformer = new DefaultXdmXdsTransformer();
 
@@ -270,7 +243,7 @@ public class DefaultXdmXdsTransformerTest extends TestCase
         try
         {
             output = transformer.transform(input);
-            assertTrue("Output is null", output != null);
+            assertTrue(output != null);
         }
         catch (Exception e)
         {
@@ -282,9 +255,10 @@ public class DefaultXdmXdsTransformerTest extends TestCase
     /**
      * Test the getXDMRequest method.
      */
+	@Test
     public void testGetXDMRequest_DataHandler()
     {
-        LOGGER.info("Begin testGetXDMRequest_DataHandler");
+        log.info("Begin testGetXDMRequest_DataHandler");
 
         DefaultXdmXdsTransformer transformer = new DefaultXdmXdsTransformer();
 
@@ -294,7 +268,7 @@ public class DefaultXdmXdsTransformerTest extends TestCase
         try
         {
             output = transformer.transform(input);
-            assertTrue("Output is null", output != null);
+            assertTrue(output != null);
         }
         catch (Exception e)
         {

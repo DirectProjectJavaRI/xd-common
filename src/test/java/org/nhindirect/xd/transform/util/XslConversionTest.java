@@ -1,56 +1,26 @@
 package org.nhindirect.xd.transform.util;
 
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import java.io.InputStream;
 
-import junit.framework.TestCase;
 
 import org.apache.commons.lang3.StringUtils;
-import org.nhindirect.xd.transform.util.XslConversion;
 
 /**
  * Test class for methods in the XSLConversion class.
  * 
  * @author beau
  */
-public class XslConversionTest extends TestCase
+public class XslConversionTest
 {
-
-    /**
-     * Test constructor.
-     * 
-     * @param testName
-     *            The test name
-     */
-    public XslConversionTest(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-
     /**
      * Test the run method.
      */
+	@Test
     public void testRun()
     {
         String input = null;
@@ -70,10 +40,10 @@ public class XslConversionTest extends TestCase
         {
             // Hit fresh, then hit cache
             output = converter.run("ccdtoccddb.xsl", input);
-            assertTrue("Output is blank", !StringUtils.isBlank(output));
+            assertTrue(!StringUtils.isBlank(output));
 
             output = converter.run("ccdtoccddb.xsl", input);
-            assertTrue("Output is blank", !StringUtils.isBlank(output));
+            assertTrue(!StringUtils.isBlank(output));
         }
         catch (Exception e)
         {

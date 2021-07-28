@@ -53,10 +53,10 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.soap.type.MetadataLevelEnum;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class handles the SOAP-Requests before they reach the Web Service
@@ -64,10 +64,10 @@ import org.w3c.dom.NodeList;
  * 
  * @author Siegfried Bolz
  */
+@Slf4j
 public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DirectSOAPHandler.class);	
+	
     public static final String ENDPOINT_ADDRESS = "javax.xml.ws.service.endpoint.address";
     public static final String RESPONSE_NODE_NAME = "RegistryResponse";
     public static final String PNR_NODE_NAME = "ProvideAndRegisterDocumentSetRequest";
@@ -111,7 +111,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
     @Override
     public boolean handleMessage(SOAPMessageContext context)
     {
-        LOGGER.info("Entering DirectSOAPHandler.handleMessage(SOAPMessageContext)");
+        log.info("Entering DirectSOAPHandler.handleMessage(SOAPMessageContext)");
         
         // Inquire incoming or outgoing message.
         boolean outbound = (Boolean) context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
@@ -120,7 +120,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
         {
             if (outbound)
             {
-                LOGGER.info("Handling an outbound message");
+                log.info("Handling an outbound message");
                 
                 boolean isACK = !context.containsKey(ENDPOINT_ADDRESS);
                 
@@ -205,10 +205,10 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     directMetadataLevelElement.setPrefix("direct");
                     directMetadataLevelElement.setValue(MetadataLevelEnum.MINIMAL.getLevel());
                 } catch (Throwable tb){
-                    if (LOGGER.isDebugEnabled()){
-                        LOGGER.debug("Failed to write SOAP Header", tb);
+                    if (log.isDebugEnabled()){
+                        log.debug("Failed to write SOAP Header", tb);
                     } else{
-                        LOGGER.error("Failed to write SOAP Header: " + tb.getMessage());
+                        log.error("Failed to write SOAP Header: " + tb.getMessage());
                     }
                 }
                 if (isACK){
@@ -218,7 +218,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
             }
             else
             {
-                LOGGER.info("Handling an inbound message");
+                log.info("Handling an inbound message");
                 
                 SOAPMessage msg = ((SOAPMessageContext) context).getMessage();
                 boolean isResponse = isResponse(msg);
@@ -327,10 +327,10 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                             }
                         }
                     } catch (Throwable tb){
-                        if (LOGGER.isDebugEnabled()){
-                            LOGGER.debug("Failed to read input parameter.", tb);
+                        if (log.isDebugEnabled()){
+                            log.debug("Failed to read input parameter.", tb);
                         } else{
-                            LOGGER.error("Failed to read input parameter.");
+                            log.error("Failed to read input parameter.");
                         }
                     }
                 }
@@ -340,7 +340,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
         }
         catch (Exception e)
         {
-            LOGGER.warn("Error handling SOAP message.", e);
+            log.warn("Error handling SOAP message.", e);
             return false;
         }
 
@@ -393,28 +393,28 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
     {
         if (msg == null)
         {
-            LOGGER.info("SOAP Message is null");
+            log.info("SOAP Message is null");
             return;
         }
 
-        LOGGER.info("");
-        LOGGER.info("--------------------");
-        LOGGER.info(" DUMP OF SOAP MESSAGE");
-        LOGGER.info("--------------------");
+        log.info("");
+        log.info("--------------------");
+        log.info(" DUMP OF SOAP MESSAGE");
+        log.info("--------------------");
 
         try
         {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             msg.writeTo(baos);
-            LOGGER.info(baos.toString(getMessageEncoding(msg)));
+            log.info(baos.toString(getMessageEncoding(msg)));
 
             // show included values
             String values = msg.getSOAPBody().getTextContent();
-            LOGGER.trace("Included values:" + values);
+            log.trace("Included values:" + values);
         }
         catch (Exception e)
         {
-            LOGGER.warn("Unable to dump soap message.", e);
+            log.warn("Unable to dump soap message.", e);
         }
     }
 
@@ -426,15 +426,15 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
     @Override
     public boolean handleFault(SOAPMessageContext context)
     {
-        LOGGER.info("ServerSOAPHandler.handleFault");
+        log.info("ServerSOAPHandler.handleFault");
         boolean outbound = (Boolean) context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
         if (outbound)
         {
-            LOGGER.info("Direction=outbound (handleFault)");
+            log.info("Direction=outbound (handleFault)");
         }
         else
         {
-            LOGGER.info("Direction=inbound (handleFault)");
+            log.info("Direction=inbound (handleFault)");
         }
 
         try
@@ -450,17 +450,17 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                 {
                     detailName = context.getMessage().getSOAPBody().getFault().getDetail().getFirstChild()
                             .getLocalName();
-                    LOGGER.info("detailName=" + detailName);
+                    log.info("detailName=" + detailName);
                 }
                 catch (Exception e)
                 {
-                    LOGGER.warn("Unable to extract detailName", e);
+                    log.warn("Unable to extract detailName", e);
                 }
             }
         }
         catch (SOAPException e)
         {
-            LOGGER.warn("Error handling fault", e);
+            log.warn("Error handling fault", e);
         }
 
         return true;

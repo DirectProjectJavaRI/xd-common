@@ -28,53 +28,26 @@
 
 package org.nhindirect.xd.soap;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.nhindirect.xd.soap.ThreadData;
-
-import junit.framework.TestCase;
 
 /**
  * Test class for the ThreadData class.
  * 
  * @author beau
  */
-public class ThreadDataTest extends TestCase {
-
-    /**
-     * Constructor
-     * 
-     * @param testName
-     *            The test name
-     */
-    public ThreadDataTest(String testName) {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
+public class ThreadDataTest 
+{    
     /**
      * Test methods in the ThreadData class.
      */
+	@Test
     public void testThreadData() {
         Map<Long, Map<String, String>> map = ThreadData.getThreadMapView();
         
@@ -92,31 +65,31 @@ public class ThreadDataTest extends TestCase {
         t1.setThisHost("thisHost.1");
         t1.setTo("to.1");
        
-        assertEquals("Map size does not match expected value.", mapSize + 1, map.size());
-        assertEquals("Map does not contain specific key.", true, map.containsKey(new Long(99991)));
-        assertEquals("Map value does not match expected.", "action.1", map.get(new Long(99991)).get(ThreadData.ACTION));        
-        assertEquals("Map value does not match expected.", "from.1", map.get(new Long(99991)).get(ThreadData.FROM));    
-        assertEquals("Map value does not match expected.", "messageId.1", map.get(new Long(99991)).get(ThreadData.MESSAGE));    
-        assertEquals("Map value does not match expected.", "pid.1", map.get(new Long(99991)).get(ThreadData.PID));    
-        assertEquals("Map value does not match expected.", "relatesTo.1", map.get(new Long(99991)).get(ThreadData.RELATESTO));    
-        assertEquals("Map value does not match expected.", "remoteHost.1", map.get(new Long(99991)).get(ThreadData.REMOTEHOST));    
-        assertEquals("Map value does not match expected.", "replyAddress.1", map.get(new Long(99991)).get(ThreadData.REPLY));    
-        assertEquals("Map value does not match expected.", "thisHost.1", map.get(new Long(99991)).get(ThreadData.THISHOST));    
-        assertEquals("Map value does not match expected.", "to.1", map.get(new Long(99991)).get(ThreadData.TO));    
+        assertEquals(mapSize + 1, map.size());
+        assertEquals(true, map.containsKey(new Long(99991)));
+        assertEquals("action.1", map.get(new Long(99991)).get(ThreadData.ACTION));        
+        assertEquals("from.1", map.get(new Long(99991)).get(ThreadData.FROM));    
+        assertEquals("messageId.1", map.get(new Long(99991)).get(ThreadData.MESSAGE));    
+        assertEquals("pid.1", map.get(new Long(99991)).get(ThreadData.PID));    
+        assertEquals("relatesTo.1", map.get(new Long(99991)).get(ThreadData.RELATESTO));    
+        assertEquals("remoteHost.1", map.get(new Long(99991)).get(ThreadData.REMOTEHOST));    
+        assertEquals("replyAddress.1", map.get(new Long(99991)).get(ThreadData.REPLY));    
+        assertEquals("thisHost.1", map.get(new Long(99991)).get(ThreadData.THISHOST));    
+        assertEquals("to.1", map.get(new Long(99991)).get(ThreadData.TO));    
         
-        assertEquals("Instance value does not match expected.", "action.1", t1.getAction());        
-        assertEquals("Instance value does not match expected.", "from.1", t1.getFrom());    
-        assertEquals("Instance value does not match expected.", "messageId.1", t1.getMessageId());    
-        assertEquals("Instance value does not match expected.", "pid.1", t1.getPid());    
-        assertEquals("Instance value does not match expected.", "relatesTo.1", t1.getRelatesTo());    
-        assertEquals("Instance value does not match expected.", "remoteHost.1", t1.getRemoteHost());    
-        assertEquals("Instance value does not match expected.", "replyAddress.1", t1.getReplyAddress());    
-        assertEquals("Instance value does not match expected.", "thisHost.1", t1.getThisHost());    
-        assertEquals("Instance value does not match expected.", "to.1", t1.getTo());    
+        assertEquals("action.1", t1.getAction());        
+        assertEquals("from.1", t1.getFrom());    
+        assertEquals("messageId.1", t1.getMessageId());    
+        assertEquals("pid.1", t1.getPid());    
+        assertEquals("relatesTo.1", t1.getRelatesTo());    
+        assertEquals("remoteHost.1", t1.getRemoteHost());    
+        assertEquals("replyAddress.1", t1.getReplyAddress());    
+        assertEquals("thisHost.1", t1.getThisHost());    
+        assertEquals("to.1", t1.getTo());    
         
         t1.setTo("to.1.1");
 
-        assertEquals("Map value does not match expected.", "to.1.1", map.get(new Long(99991)).get(ThreadData.TO));    
+        assertEquals("to.1.1", map.get(new Long(99991)).get(ThreadData.TO));    
         
         ThreadData t2 = new ThreadData(new Long(99992));
         t2.setAction("action.2");
@@ -129,17 +102,17 @@ public class ThreadDataTest extends TestCase {
         t2.setThisHost("thisHost.2");
         t2.setTo("to.2");
         
-        assertEquals("Map size does not match expected value.", mapSize + 2, map.size());
-        assertEquals("Map does not contain specific key.", true, map.containsKey(new Long(99992)));    
+        assertEquals(mapSize + 2, map.size());
+        assertEquals(true, map.containsKey(new Long(99992)));    
         
         ThreadData.clean(new Long(99991));
-        assertTrue("Key,value was not removed from map", map.get(new Long(99991)) == null);
+        assertTrue(map.get(new Long(99991)) == null);
         
         String out = t1.toString();
-        assertTrue("toString() output does not contain expected value", StringUtils.containsIgnoreCase(out, "No map found"));
+        assertTrue(StringUtils.containsIgnoreCase(out, "No map found"));
         
         out = t2.toString();
-        assertTrue("toString() output does not contain expected value", StringUtils.contains(out, "99992"));
+        assertTrue(StringUtils.contains(out, "99992"));
     }
 
 }

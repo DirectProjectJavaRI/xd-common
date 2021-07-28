@@ -1,15 +1,16 @@
 package org.nhindirect.xd.routing.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.Test;
 import org.nhind.config.rest.AddressService;
 import org.nhind.config.rest.DomainService;
 import org.nhindirect.config.model.Address;
@@ -51,23 +52,23 @@ public class RoutingResolverImplTest extends SpringBaseTest
         Collection<String> smtpResolved = resolver.getSmtpEndpoints(endpoints);
         Collection<String> xdResolved = resolver.getXdEndpoints(endpoints);
 
-        assertEquals("List does not match expected size", 2, smtpResolved.size());
-        assertTrue("List does not contain expected element", smtpResolved.contains(smtpEndpoints.get(0)));
-        assertTrue("List does not contain expected element", smtpResolved.contains(smtpEndpoints.get(1)));
+        assertEquals(2, smtpResolved.size());
+        assertTrue(smtpResolved.contains(smtpEndpoints.get(0)));
+        assertTrue(smtpResolved.contains(smtpEndpoints.get(1)));
 
-        assertEquals("List does not match expected size", 2, xdResolved.size());
-        assertTrue("List does not contain expected element", xdResolved.contains(xdEndpoints.get(0)));
-        assertTrue("List does not contain expected element", xdResolved.contains(xdEndpoints.get(1)));
+        assertEquals(2, xdResolved.size());
+        assertTrue(xdResolved.contains(xdEndpoints.get(0)));
+        assertTrue(xdResolved.contains(xdEndpoints.get(1)));
 
-        assertTrue("Output does not match expected", resolver.isSmtpEndpoint(smtpEndpoints.get(0)));
-        assertTrue("Output does not match expected", resolver.isSmtpEndpoint(smtpEndpoints.get(1)));
-        assertTrue("Output does not match expected", resolver.isXdEndpoint(xdEndpoints.get(0)));
-        assertTrue("Output does not match expected", resolver.isXdEndpoint(xdEndpoints.get(1)));
+        assertTrue(resolver.isSmtpEndpoint(smtpEndpoints.get(0)));
+        assertTrue(resolver.isSmtpEndpoint(smtpEndpoints.get(1)));
+        assertTrue(resolver.isXdEndpoint(xdEndpoints.get(0)));
+        assertTrue(resolver.isXdEndpoint(xdEndpoints.get(1)));
 
-        assertFalse("Output does not match expected", resolver.isSmtpEndpoint(xdEndpoints.get(0)));
-        assertFalse("Output does not match expected", resolver.isSmtpEndpoint(xdEndpoints.get(1)));
-        assertFalse("Output does not match expected", resolver.isXdEndpoint(smtpEndpoints.get(0)));
-        assertFalse("Output does not match expected", resolver.isXdEndpoint(smtpEndpoints.get(1)));
+        assertFalse(resolver.isSmtpEndpoint(xdEndpoints.get(0)));
+        assertFalse(resolver.isSmtpEndpoint(xdEndpoints.get(1)));
+        assertFalse(resolver.isXdEndpoint(smtpEndpoints.get(0)));
+        assertFalse(resolver.isXdEndpoint(smtpEndpoints.get(1)));
     }
 
     /**
@@ -122,18 +123,18 @@ public class RoutingResolverImplTest extends SpringBaseTest
         RoutingResolver resolver = new RoutingResolverImpl(addressService);
 
         Collection<String> smtpResolved = resolver.getSmtpEndpoints(endpoints);
-        assertEquals("List does not match expected size", 2, smtpResolved.size());
-        assertEquals("List does not contain expected element", (new ArrayList<String>(smtpResolved)).get(0), smtpEndpoints.get(0));
-        assertEquals("List does not contain expected element", (new ArrayList<String>(emptyEndpoints)).get(0), emptyEndpoints.get(0));
+        assertEquals(2, smtpResolved.size());
+        assertEquals((new ArrayList<String>(smtpResolved)).get(0), smtpEndpoints.get(0));
+        assertEquals((new ArrayList<String>(emptyEndpoints)).get(0), emptyEndpoints.get(0));
 
         Collection<String> xdResolved = resolver.getXdEndpoints(endpoints);
-        assertEquals("List does not match expected size", 1, xdResolved.size());
-        assertEquals("List does not contain expected element", (new ArrayList<String>(xdResolved)).get(0), xdEndpoints.get(0));
-        assertEquals("List does not match expected size", 1, xdResolved.size());
-        assertEquals("List does not contain expected element", (new ArrayList<String>(xdResolved)).get(0), xdEndpoints.get(0));       
+        assertEquals(1, xdResolved.size());
+        assertEquals((new ArrayList<String>(xdResolved)).get(0), xdEndpoints.get(0));
+        assertEquals(1, xdResolved.size());
+        assertEquals((new ArrayList<String>(xdResolved)).get(0), xdEndpoints.get(0));       
 
         String endpoint = resolver.resolve(xdEndpoints.get(0));
-        assertEquals("Output does not match expected", addrs[1].getEndpoint(), endpoint);
+        assertEquals(addrs[1].getEndpoint(), endpoint);
     }
 
 }

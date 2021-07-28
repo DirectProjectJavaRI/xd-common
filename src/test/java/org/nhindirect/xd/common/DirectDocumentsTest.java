@@ -28,10 +28,10 @@
 
 package org.nhindirect.xd.common;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.Date;
-
-import junit.framework.TestCase;
 
 import org.nhindirect.xd.common.type.ClassCodeEnum;
 import org.nhindirect.xd.common.type.FormatCodeEnum;
@@ -46,45 +46,13 @@ import org.nhindirect.xd.transform.util.type.MimeType;
  * 
  * @author beau
  */
-public class DirectDocumentsTest extends TestCase
+public class DirectDocumentsTest
 {
-
-    /**
-     * Default constructor.
-     * 
-     * @param testName
-     *            The test name.
-     */
-    public DirectDocumentsTest(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
 
     /**
      * TODO: individual unit tests
      */
+	@Test
     public void testDirectDocuments()
     {
         // Create a collection of documents

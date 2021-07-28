@@ -42,18 +42,16 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * XSL conversion utilities.
  */
+@Slf4j
 public class XslConversion
 {
 
     private static Hashtable<String, Templates> conversions = new Hashtable<String, Templates>(10);
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(XslConversion.class);	
 
     /**
      * Default constructor.
@@ -84,7 +82,7 @@ public class XslConversion
             {
                 Templates temp = conversions.get(mapFile);
                 transformer = temp.newTransformer();
-                LOGGER.info("From xsl cache");
+                log.info("From xsl cache");
             }
             else
             {
@@ -110,7 +108,7 @@ public class XslConversion
 
                         if (is == null)
                         {
-                            LOGGER.info("Mapfile did not read " + mapFile);
+                            log.info("Mapfile did not read " + mapFile);
                         }
 
                         Templates temp = tFactory.newTemplates(new StreamSource(is));
@@ -126,21 +124,21 @@ public class XslConversion
         }
         catch (TransformerConfigurationException e)
         {
-            LOGGER.error("Exception occured during XSL conversion", e);
+            log.error("Exception occured during XSL conversion", e);
             throw e;
         }
         catch (TransformerException e)
         {
-            LOGGER.error("Exception occured during XSL conversion", e);
+            log.error("Exception occured during XSL conversion", e);
             throw e;
         }
 
-        if (LOGGER.isInfoEnabled())
+        if (log.isInfoEnabled())
         {
             long elapse = System.currentTimeMillis() - start;
 
-            LOGGER.info("Started at " + new Timestamp(start).toString());
-            LOGGER.info("Elapsed conversion time was " + elapse + "ms");
+            log.info("Started at " + new Timestamp(start).toString());
+            log.info("Elapsed conversion time was " + elapse + "ms");
         }
 
         return retXml;
