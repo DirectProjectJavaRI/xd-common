@@ -185,7 +185,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
                     if (StringUtils.isNotBlank(threadData.getDirectFrom()))
                     {
-                        SOAPElement directFromElement = directHeader.addChildElement(new QName("from"));
+                        SOAPElement directFromElement = directHeader.addChildElement(new QName("urn:direct:addressing", "from"));
                         directFromElement.setPrefix("direct");
                         URI uri = new URI(threadData.getDirectFrom());
                         directFromElement.setValue((new URI("mailto", uri.getSchemeSpecificPart(), null)).toString());
@@ -198,14 +198,14 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                          */
                         String[] directTos = threadData.getDirectTo().split(";");
                         for (String directToAddr : directTos){
-                            SOAPElement directToElement = directHeader.addChildElement(new QName("to"));
+                            SOAPElement directToElement = directHeader.addChildElement(new QName("urn:direct:addressing", "to"));
                             directToElement.setPrefix("direct");
                             URI uri = new URI(directToAddr);
                             directToElement.setValue((new URI("mailto", uri.getSchemeSpecificPart(), null)).toString());
                         }
                     }
 
-                    SOAPElement directMetadataLevelElement = directHeader.addChildElement(new QName("metadata-level"));
+                    SOAPElement directMetadataLevelElement = directHeader.addChildElement(new QName("urn:direct:addressing", "metadata-level"));
                     directMetadataLevelElement.setPrefix("direct");
                     directMetadataLevelElement.setValue(MetadataLevelEnum.MINIMAL.getLevel());
                 } catch (Throwable tb){

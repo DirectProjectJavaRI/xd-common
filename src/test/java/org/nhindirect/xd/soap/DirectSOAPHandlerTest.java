@@ -59,7 +59,7 @@ public class DirectSOAPHandlerTest
         DirectSOAPHandler handler = new DirectSOAPHandler();
 
         Set<QName> headers = handler.getHeaders();
-        assertEquals(4, headers.size());
+        assertEquals(5, headers.size());
 
         if (!headers.contains(new QName("http://www.w3.org/2005/08/addressing", "Action")))
         {
@@ -78,6 +78,11 @@ public class DirectSOAPHandlerTest
         {
             fail("Headers missing expected object");
         }
+        if (!headers.contains(new QName(
+                "http://www.w3.org/2005/08/addressing", "ReplyTo")))
+        {
+            fail("Headers missing expected object");
+        }        
     }
 
     /**
