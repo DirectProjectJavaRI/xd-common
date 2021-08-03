@@ -25,8 +25,6 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import org.nhindirect.xd.transform.pojo.SimplePerson;
 
 /**
@@ -34,46 +32,8 @@ import org.nhindirect.xd.transform.pojo.SimplePerson;
  * 
  * @author vlewis
  */
-public class DefaultMimeXdsTransformerTest extends TestCase
+public class DefaultMimeXdsTransformerTest
 {
-
-    /**
-     * Default constructor.
-     * 
-     * @param testName
-     *            The test name.
-     */
-    public DefaultMimeXdsTransformerTest(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-    
-    public void testDummy()
-    {
-        assertTrue(true);
-    }
 
     /*
      * ****************************************
@@ -373,7 +333,7 @@ public class DefaultMimeXdsTransformerTest extends TestCase
      * @throws Exception
      */
     @SuppressWarnings("unused")
-    private String getTestSubmit() throws Exception
+	private String getTestSubmit() throws Exception
     {
         InputStream is = this.getClass().getClassLoader().getResourceAsStream("submitobjectrequest.xml");
         byte[] theBytes = new byte[is.available()];

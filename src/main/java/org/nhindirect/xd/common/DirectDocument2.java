@@ -65,8 +65,8 @@ import org.nhindirect.xd.common.type.SlotType1Enum;
 import org.nhindirect.xd.common.type.SubmitObjectsRequestEnum;
 import org.nhindirect.xd.transform.pojo.SimplePerson;
 import org.nhindirect.xd.transform.util.XmlUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Abstract representation of a document with supporting metadata.
@@ -76,12 +76,11 @@ import org.slf4j.LoggerFactory;
  * 
  * @author beau
  */
+@Slf4j
 public class DirectDocument2
 {
     private byte[] data;
     private Metadata metadata;
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DirectDocument2.class);	
 
     /**
      * Default document constructor.
@@ -427,7 +426,7 @@ public class DirectDocument2
                         }
                         catch (ParseException e)
                         {
-                            LOGGER.error("Unable to parse creationTime", e);
+                            log.error("Unable to parse creationTime", e);
                             throw new MetadataException("Unable to parse creationTime", e);
                         }
                     }
@@ -449,7 +448,7 @@ public class DirectDocument2
                         }
                         catch (ParseException e)
                         {
-                            LOGGER.error("Unable to parse serviceStartTime", e);
+                            log.error("Unable to parse serviceStartTime", e);
                             throw new MetadataException("Unable to parse serviceStartTime", e);
                         }
                     }
@@ -466,7 +465,7 @@ public class DirectDocument2
                         }
                         catch (ParseException e)
                         {
-                            LOGGER.error("Unable to parse serviceStopTime", e);
+                            log.error("Unable to parse serviceStopTime", e);
                             throw new MetadataException("Unable to parse serviceStopTime", e);
                         }
                     }
@@ -1310,7 +1309,7 @@ public class DirectDocument2
         public void setHash(String hash)
         {
             if (StringUtils.isNotEmpty(this.hash) && !StringUtils.equalsIgnoreCase(this.hash, hash))
-                LOGGER.warn("Replacing existing value with new value");
+                log.warn("Replacing existing value with new value");
             
             this.hash = hash;
         }
@@ -1330,7 +1329,7 @@ public class DirectDocument2
         public void setSize(Long size)
         {
             if (this.size != null && !this.size.equals(size))
-                LOGGER.warn("Replacing existing size with new value");
+                log.warn("Replacing existing size with new value");
             
             this.size = size;
         }
@@ -1349,7 +1348,7 @@ public class DirectDocument2
         public void setURI(String uri)
         {
             if (StringUtils.isNotEmpty(this.uri) && !StringUtils.equalsIgnoreCase(this.uri, uri))
-                LOGGER.warn("Replacing existing value with new value");
+                log.warn("Replacing existing value with new value");
 
             this.uri = uri;
         }
@@ -1384,7 +1383,7 @@ public class DirectDocument2
         }
         catch (NoSuchAlgorithmException e)
         {
-            LOGGER.error("Unable to calculate hash, returning null.", e);
+            log.error("Unable to calculate hash, returning null.", e);
             return null;
         }
         

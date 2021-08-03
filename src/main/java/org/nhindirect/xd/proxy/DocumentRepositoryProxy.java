@@ -33,6 +33,7 @@ import ihe.iti.xds_b._2007.DocumentRepositoryService;
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
 import ihe.iti.xds_b._2007.RetrieveDocumentSetRequestType;
 import ihe.iti.xds_b._2007.RetrieveDocumentSetResponseType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URL;
 
@@ -45,9 +46,6 @@ import javax.xml.ws.soap.SOAPBinding;
 
 import oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Wrapper class for handling calls to the Document Repository WS (XD*). The
  * initialization uses a WSDL located within the JAR for convenience. The
@@ -55,14 +53,13 @@ import org.slf4j.LoggerFactory;
  * 
  * @author beau
  */
+@Slf4j
 public class DocumentRepositoryProxy
 {
     private String endpoint = null;
     private HandlerResolver handlerResolver = null;
 
     private DocumentRepositoryPortType proxy;
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DocumentRepositoryProxy.class);	
 
     /**
      * Construct a new proxy using the provided endpoint.
@@ -114,7 +111,7 @@ public class DocumentRepositoryProxy
         }
         catch (Exception e)
         {
-            LOGGER.error("Error initializing proxy.", e);
+            log.error("Error initializing proxy.", e);
         }
     }
 
@@ -132,7 +129,7 @@ public class DocumentRepositoryProxy
         if (proxy == null)
             initProxy();
 
-        LOGGER.debug("Sending to endpoint: " + endpoint);       
+        log.debug("Sending to endpoint: " + endpoint);       
         return proxy.documentRepositoryProvideAndRegisterDocumentSetB(body);
     }
 

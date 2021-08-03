@@ -28,6 +28,13 @@
 
 package org.nhindirect.xd.soap;
 
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
+
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -35,58 +42,24 @@ import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPMessage;
 
-import junit.framework.TestCase;
-
 /**
  * Test class for methods in DirectSOAPHandler.
  * 
  * @author beau
  */
-public class DirectSOAPHandlerTest extends TestCase
+public class DirectSOAPHandlerTest
 {
-
-    /**
-     * Constructor
-     * 
-     * @param testName
-     *            The test name
-     */
-    public DirectSOAPHandlerTest(String testName)
-    {
-        super(testName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
 
     /**
      * Test the getHeaders method.
      */
+	@Test
     public void testGetHeaders()
     {
         DirectSOAPHandler handler = new DirectSOAPHandler();
 
         Set<QName> headers = handler.getHeaders();
-        assertEquals("Number of elements does not match expected", 4, headers.size());
+        assertEquals(5, headers.size());
 
         if (!headers.contains(new QName("http://www.w3.org/2005/08/addressing", "Action")))
         {
@@ -105,11 +78,17 @@ public class DirectSOAPHandlerTest extends TestCase
         {
             fail("Headers missing expected object");
         }
+        if (!headers.contains(new QName(
+                "http://www.w3.org/2005/08/addressing", "ReplyTo")))
+        {
+            fail("Headers missing expected object");
+        }        
     }
 
     /**
      * Test the getMessageEncoding method.
      */
+	@Test
     public void testGetMessageEncoding()
     {
         String output = null;
@@ -122,14 +101,14 @@ public class DirectSOAPHandlerTest extends TestCase
             message = mf.createMessage();
 
             message.setProperty(SOAPMessage.CHARACTER_SET_ENCODING, "ISO-8859-1");
-            assertNotNull("Test setup failed", message.getProperty(SOAPMessage.CHARACTER_SET_ENCODING));
+            assertNotNull(message.getProperty(SOAPMessage.CHARACTER_SET_ENCODING));
             output = handler.getMessageEncoding(message);
-            assertEquals("Message encoding does not match expected", "ISO-8859-1", output);
+            assertEquals("ISO-8859-1", output);
 
             message.setProperty(SOAPMessage.CHARACTER_SET_ENCODING, null);
-            assertNull("Test setup failed", message.getProperty(SOAPMessage.CHARACTER_SET_ENCODING));
+            assertNull(message.getProperty(SOAPMessage.CHARACTER_SET_ENCODING));
             output = handler.getMessageEncoding(message);
-            assertEquals("Message encoding does not match expected", "utf-8", output);
+            assertEquals("utf-8", output);
         }
         catch (Exception e)
         {

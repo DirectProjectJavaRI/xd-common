@@ -35,19 +35,18 @@ import org.nhindirect.common.rest.exceptions.ServiceException;
 import org.nhindirect.config.model.Address;
 import org.nhindirect.config.model.EntityStatus;
 import org.nhindirect.xd.routing.RoutingResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Default implementation of a RoutingResolver.
  * 
  * @author beau
  */
+@Slf4j
 public class RoutingResolverImpl extends RoutingResolver
 {
     private AddressService addressService;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RoutingResolverImpl.class);
 
     /**
      * Construct a RoutingResolverImpl without a configuration service backing.
@@ -145,7 +144,7 @@ public class RoutingResolverImpl extends RoutingResolver
     {
         if (addressService == null)
         {
-            LOGGER.warn("Attempt to lookup address with unititialized address service, falling back to default routing.");
+            log.warn("Attempt to lookup address with unititialized address service, falling back to default routing.");
             return null;
         }
 
@@ -157,8 +156,8 @@ public class RoutingResolverImpl extends RoutingResolver
 
             if (addr == null || !addr.getStatus().equals(EntityStatus.ENABLED))
             {
-                if (LOGGER.isTraceEnabled())
-                    LOGGER.trace("Unable to find address " + address + " in address store.");
+                if (log.isTraceEnabled())
+                    log.trace("Unable to find address " + address + " in address store.");
                 
                 return null;
             }
@@ -167,8 +166,8 @@ public class RoutingResolverImpl extends RoutingResolver
         }
         catch (ServiceException e)
         {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Unable to look up address, falling back to default routing.", e);
+            if (log.isWarnEnabled())
+                log.warn("Unable to look up address, falling back to default routing.", e);
         }
 
         return null;

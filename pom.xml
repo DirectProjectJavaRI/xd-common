@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>xd-common</artifactId>
     <name>NHIN Direct XD* Common Library</name>
-    <version>6.0</version>
+    <version>8.0.0</version>
     <description>Library for common XD* operations and objects</description>
     <inceptionYear>2010</inceptionYear>
     <url>https://github.com/DirectProjectJavaRI/xd-common</url>     
@@ -31,17 +31,22 @@
        </license>
     </licenses>
     <prerequisites>
-        <maven>3.0.0</maven>
+        <maven>3.5.0</maven>
     </prerequisites>  	    
-	<parent>
+    <parent>
 	   <groupId>org.springframework.boot</groupId>
 	   <artifactId>spring-boot-dependencies</artifactId>
-	   <version>2.1.2.RELEASE</version>
-	</parent>   
+	   <version>2.5.2</version>
+	   <relativePath />
+    </parent> 
 	<scm>
 	     <url>https://github.com/DirectProjectJavaRI/xd-common.git</url>  
 	     <connection>scm:hg:https://github.com/DirectProjectJavaRI/xd-common.git</connection>
 	</scm> 	 
+    <properties>
+      <javax-mail.version>1.6.2</javax-mail.version>
+      <commons-io.version>2.8.0</commons-io.version>
+    </properties>	
     <dependencies>    
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -50,7 +55,7 @@
         <dependency>
             <groupId>org.nhind</groupId>
             <artifactId>config-service-client</artifactId>
-            <version>6.0</version>
+            <version>8.0.0</version>
             <scope>compile</scope>
         </dependency>       
 		<dependency>
@@ -60,19 +65,13 @@
 	    <dependency>
 	    	<groupId>commons-io</groupId>
 	    	<artifactId>commons-io</artifactId>
-	    	<version>2.6</version>
-	    </dependency>	
-	    <dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
+	    	<version>${commons-io.version}</version>
+	    </dependency>	 
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>${javax-mail.version}</version>
 		</dependency>  
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>1.4.3</version>
-            <scope>compile</scope>
-        </dependency>    
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
@@ -85,7 +84,7 @@
         <dependency>
             <groupId>org.nhind</groupId>
             <artifactId>config-service-jar</artifactId>
-            <version>6.0</version>
+            <version>8.0.0</version>
             <scope>test</scope>
         </dependency>  	 
 		<dependency>
@@ -93,23 +92,21 @@
 		    <artifactId>spring-boot-starter-test</artifactId>
 		    <scope>test</scope>
 		</dependency>	
+	    <dependency>
+	    	<groupId>org.springframework.boot</groupId>
+	    	<artifactId>spring-boot-starter-security</artifactId>
+	    	<scope>test</scope>
+	    </dependency>	
 		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-			<version>1.4</version>
-			<scope>test</scope>
+		    <groupId>com.h2database</groupId>
+		    <artifactId>h2</artifactId>
+		    <scope>test</scope>
 		</dependency>	
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<scope>test</scope>
-		</dependency>	
-		<dependency>
-		    <groupId>org.apache.camel</groupId>
-		    <artifactId>camel-spring-boot-starter</artifactId>
-		    <version>2.22.0</version>
-		    <scope>test</scope>		    
-		</dependency>		        	       
+	    <dependency>
+	       <groupId>io.r2dbc</groupId>
+	       <artifactId>r2dbc-h2</artifactId>
+	       <scope>test</scope>
+	    </dependency>	    			        	       
     </dependencies>
 
     <build>
@@ -198,6 +195,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
+                <version>3.1.1</version>
             </plugin>
 		    <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
@@ -213,9 +211,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.6.1</version>
                 <configuration>
-				    <additionalparam>-Xdoclint:none</additionalparam>
+				    <additionalJOption>-Xdoclint:none</additionalJOption>
 					<charset>UTF-8</charset>
 					<docencoding>UTF-8</docencoding>
 					<docfilessubdirs>true</docfilessubdirs>
@@ -250,6 +247,7 @@
                      </goals>
                  </execution>
                </executions>
+               <version>3.0.1</version>
             </plugin>  
              -->      
         </plugins>             
@@ -260,14 +258,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.9</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.6.1</version>
                 <configuration>
-				    <additionalparam>-Xdoclint:none</additionalparam>
+				    <additionalJOption>-Xdoclint:none</additionalJOption>
 					<charset>UTF-8</charset>
 					<docencoding>UTF-8</docencoding>
 					<docfilessubdirs>true</docfilessubdirs>
@@ -294,6 +290,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
+                <version>3.1.1</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

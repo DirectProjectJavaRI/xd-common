@@ -1,5 +1,7 @@
 package org.nhindirect.xd.transform.impl;
 
+import org.junit.jupiter.api.Test;
+
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
 
 import java.io.File;
@@ -7,8 +9,6 @@ import java.util.Arrays;
 import java.util.Date;
 
 import javax.xml.namespace.QName;
-
-import junit.framework.TestCase;
 
 import org.nhindirect.xd.common.DirectDocument2;
 import org.nhindirect.xd.common.DirectDocuments;
@@ -21,8 +21,9 @@ import org.nhindirect.xd.transform.XdsXdmTransformer;
 import org.nhindirect.xd.transform.pojo.SimplePerson;
 import org.nhindirect.xd.transform.util.XmlUtils;
 
-public class DefaultXdsXdmTransformerTest extends TestCase
+public class DefaultXdsXdmTransformerTest
 {
+	@Test
     public void testTransform() throws Exception
     {
         // Create a collection of documents

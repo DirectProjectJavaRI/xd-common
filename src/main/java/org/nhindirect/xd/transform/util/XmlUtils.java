@@ -36,18 +36,16 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class contains common XML utility methods.
  * 
  * @author beau
  */
+@Slf4j
 public class XmlUtils
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(XmlUtils.class);	
-
     /**
      * Marshal an object into an XML string.
      * 
@@ -76,8 +74,8 @@ public class XmlUtils
         }
         catch (Exception ex)
         {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Failed to marshal message.", ex);
+            if (log.isWarnEnabled())
+                log.warn("Failed to marshal message.", ex);
         }
 
         return ret;
@@ -102,8 +100,8 @@ public class XmlUtils
         }
         catch (JAXBException e)
         {
-            if (LOGGER.isErrorEnabled())
-                LOGGER.error("Failed to create JAXBContext object.", e);
+            if (log.isErrorEnabled())
+                log.error("Failed to create JAXBContext object.", e);
             throw e;
         }
 
@@ -133,8 +131,8 @@ public class XmlUtils
         }
         catch (Exception ex)
         {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Failed to unmarshal message.", ex);
+            if (log.isWarnEnabled())
+                log.warn("Failed to unmarshal message.", ex);
         }
 
         return ret;

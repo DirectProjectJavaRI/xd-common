@@ -20,9 +20,10 @@ import javax.activation.DataHandler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.transform.util.type.MimeType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class XdmPackage {
 
     private String messageId;
@@ -32,7 +33,6 @@ public class XdmPackage {
     private static final int BUFFER = 2048;
     private static final String XDM_SUB_FOLDER = "IHE_XDM/SUBSET01";
     private static final String XDM_METADATA_FILE = "METADATA.xml";
-	private static final Logger LOGGER = LoggerFactory.getLogger(XdmPackage.class);	
 
     public XdmPackage() {
         this(UUID.randomUUID().toString());
@@ -128,7 +128,7 @@ public class XdmPackage {
 
             data += new String(bytes);
         } catch (Exception e) {
-            LOGGER.error("Unable to access index file.", e);
+            log.error("Unable to access index file.", e);
             throw e;
         }
 
@@ -144,7 +144,7 @@ public class XdmPackage {
         try {
             bytes = readFile("README.txt");
         } catch (Exception e) {
-            LOGGER.error("Unable to access readme file.", e);
+            log.error("Unable to access readme file.", e);
             throw e;
         }
 
@@ -160,7 +160,7 @@ public class XdmPackage {
         try {
             bytes = readFile("CCD.xsl");
         } catch (Exception e) {
-            LOGGER.error("Unable to access xsl file.", e);
+            log.error("Unable to access xsl file.", e);
             throw e;
         }
 
@@ -175,8 +175,8 @@ public class XdmPackage {
             // Create a temporary work file
             file = fileFromDataHandler(dataHandler);
         } catch (Exception e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Error creating temporary work file, unable to complete transformation.", e);
+            if (log.isErrorEnabled()) {
+                log.error("Error creating temporary work file, unable to complete transformation.", e);
             }
             throw new Exception("Error creating temporary work file, unable to complete transformation.", e);
         }
@@ -186,12 +186,12 @@ public class XdmPackage {
         boolean delete = file.delete();
 
         if (delete) {
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("Deleted temporary work file " + file.getAbsolutePath());
+            if (log.isTraceEnabled()) {
+                log.trace("Deleted temporary work file " + file.getAbsolutePath());
             }
         } else {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("Unable to delete temporary work file " + file.getAbsolutePath());
+            if (log.isWarnEnabled()) {
+                log.warn("Unable to delete temporary work file " + file.getAbsolutePath());
             }
         }
 
@@ -212,7 +212,7 @@ public class XdmPackage {
 
             zipEntry = zipEntries.nextElement();
             String zname = zipEntry.getName();
-            LOGGER.info("Processing a ZipEntry named " + zname);
+            log.info("Processing a ZipEntry named " + zname);
             if (!zipEntry.isDirectory()) {
                 String subsetDirspec = getSubmissionSetDirspec(zipEntry.getName());
 
@@ -229,7 +229,7 @@ public class XdmPackage {
 
         // load data
         while (zipEntries.hasMoreElements()) {
-            LOGGER.trace("Processing a ZipEntry");
+            log.trace("Processing a ZipEntry");
 
             zipEntry = zipEntries.nextElement();
             String zname = zipEntry.getName();
@@ -248,7 +248,7 @@ public class XdmPackage {
                     DirectDocument2 document = documents.getDocumentByHash(digest);
 
                     if (document == null) {
-                        LOGGER.warn("Unable to find metadata for document by hash. Creating document with no supporting metadata.");
+                        log.warn("Unable to find metadata for document by hash. Creating document with no supporting metadata.");
 
                         document = new DirectDocument2();
                         documents.getDocuments().add(document);
@@ -394,13 +394,13 @@ public class XdmPackage {
                 out.write(buf, 0, len);
             }
         } catch (FileNotFoundException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("File not found - " + fileName, e);
+            if (log.isErrorEnabled()) {
+                log.error("File not found - " + fileName, e);
             }
             throw e;
         } catch (IOException e) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Exception thrown while trying to read file from DataHandler object", e);
+            if (log.isErrorEnabled()) {
+                log.error("Exception thrown while trying to read file from DataHandler object", e);
             }
             throw e;
         } finally {
@@ -412,8 +412,8 @@ public class XdmPackage {
             }
         }
 
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("Created temporary work file " + f.getAbsolutePath());
+        if (log.isTraceEnabled()) {
+            log.trace("Created temporary work file " + f.getAbsolutePath());
         }
 
         return f;

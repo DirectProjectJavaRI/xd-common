@@ -33,6 +33,7 @@ import static org.nhindirect.xd.common.DirectDocumentUtils.makeSlot;
 import static org.nhindirect.xd.common.DirectDocumentUtils.slotNotEmpty;
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType.Document;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -66,8 +67,6 @@ import org.nhindirect.xd.common.type.ExternalIdentifierTypeEnum;
 import org.nhindirect.xd.common.type.SlotType1Enum;
 import org.nhindirect.xd.common.type.SubmitObjectsRequestEnum;
 import org.nhindirect.xd.transform.util.XmlUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract representation of a collection of documents with supporting
@@ -75,11 +74,11 @@ import org.slf4j.LoggerFactory;
  * 
  * @author beau
  */
+@Slf4j
 public class DirectDocuments {
 
     private List<DirectDocument2> documents;
-    private SubmissionSet submissionSet;
-	private static final Logger LOGGER = LoggerFactory.getLogger(DirectDocuments.class);	
+    private SubmissionSet submissionSet;	
 
     public DirectDocuments() {
         this.documents = new ArrayList<DirectDocument2>();
@@ -99,7 +98,7 @@ public class DirectDocuments {
      */
     public void setSubmissionSet(SubmissionSet submissionSet) {
         if (this.submissionSet != null && !this.submissionSet.equals(submissionSet)) {
-            LOGGER.warn("Overwriting existing SubmissionSet values");
+            log.warn("Overwriting existing SubmissionSet values");
         }
 
         this.submissionSet = submissionSet;
@@ -443,7 +442,7 @@ public class DirectDocuments {
                             submissionTime = DateUtils.parseDate(slot.getValueList().getValue().get(
                                     0), new String[]{"yyyyMMddHHmmss", "yyyyMMddHHmm", "yyyyMMdd"});
                         } catch (ParseException e) {
-                            LOGGER.error("Unable to parse submissionTime", e);
+                            log.error("Unable to parse submissionTime", e);
                             throw new MetadataException("Unable to parse submissionTime", e);
                         }
                     }
