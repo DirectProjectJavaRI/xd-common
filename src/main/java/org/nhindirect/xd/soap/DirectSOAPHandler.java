@@ -120,7 +120,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
         {
             if (outbound)
             {
-                log.info("Handling an outbound message");
+                log.info("Handling XD outbound message");
                 
                 boolean isACK = !context.containsKey(ENDPOINT_ADDRESS);
                 
@@ -222,7 +222,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
             }
             else
             {
-                log.info("Handling an inbound message");
+                log.info("Handling XD inbound message");
                 
                 SOAPMessage msg = ((SOAPMessageContext) context).getMessage();
                 boolean isResponse = isResponse(msg);
