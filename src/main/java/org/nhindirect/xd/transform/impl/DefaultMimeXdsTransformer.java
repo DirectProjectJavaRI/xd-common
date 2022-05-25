@@ -97,40 +97,45 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
                 // Add document to the collection of documents
                 documents.getDocuments().add(getDocument(sentDate, from, xdsMimeType, xdsFormatCode, xdsDocument, documentType));
                 documents.setSubmissionSet(getSubmissionSet(subject, sentDate, from, recipients, xdsDocument, documentType));
-            } // Multipart/mixed (attachments)
+            }
+            // Multipart/mixed (attachments)
             else if (MimeType.MULTIPART.matches(mimeMessage.getContentType())) {
-                log.info("Handling multipart/mixed - " + mimeMessage.getContentType());
+               MimeMultipart mimeMultipart = (MimeMultipart) mimeMessage.getContent();
+               int numAttachments = mimeMultipart.getCount();
+               log.info("Handling multipart/mixed - " + mimeMessage.getContentType() + " with " + numAttachments + " documents.");
 
-                MimeMultipart mimeMultipart = (MimeMultipart) mimeMessage.getContent();
                BodyPart xdmBodyPart = null;
-                
                 for (int i = 0; i < mimeMultipart.getCount(); i++) {
                     //check for XDM
                      BodyPart bodyPart = mimeMultipart.getBodyPart(i);
                      documentType = DirectDocumentType.lookup(bodyPart);
                     if (DirectDocumentType.XDM.equals(documentType)) {
                         xdmBodyPart =  bodyPart;
+                        log.info("Found XDM document.");
+
+                        break;
                     }
                 }
-                
-                
+
                 // For each BodyPart
                 for (int i = 0; i < mimeMultipart.getCount(); i++) {
-                    
-  /*
-                     * Special handling for XDM attachments.
-                     * 
-                     * Spec says if XDM package is present, this will be the
-                     * only attachment.
-                     * 
-                     * Overwrite all documents with XDM content and then break
-                     */
+
+                   /*
+                   * Special handling for XDM attachments.
+                   * Spec says if XDM package is present, this will be the
+                   * only attachment.
+                   * Overwrite all documents with XDM content and then break
+                   */
                     if (xdmBodyPart != null) {
+
+                        if (log.isInfoEnabled()) {
+                          log.info("XDM FILE FOUND");
+                        }
+
                         XdmPackage xdmPackage = XdmPackage.fromXdmZipDataHandler(xdmBodyPart.getDataHandler());
 
                         // Spec says if XDM package is present, this will be the only attachment
                         // Overwrite all documents with XDM content and then break
-                        System.out.println("XDM FILE FOUND");
                         documents = xdmPackage.getDocuments();
 
                         break;
@@ -147,15 +152,9 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
 
                     if (log.isInfoEnabled()) {
                         log.info("File name: " + bodyPart.getFileName());
-                    }
-                    if (log.isInfoEnabled()) {
                         log.info("Content type: " + bodyPart.getContentType());
-                    }
-                    if (log.isInfoEnabled()) {
                         log.info("DocumentType: " + documentType.toString());
                     }
-
-                  
 
                     // Get the format code and MIME type
                     xdsFormatCode = documentType.getFormatCode();
@@ -165,7 +164,7 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
                     if (DirectDocumentType.UNKNOWN.equals(documentType)) {
                         xdsMimeType = bodyPart.getContentType();
                     }
-                    
+
                     // Get the contents
                     xdsDocument = read(bodyPart);
 

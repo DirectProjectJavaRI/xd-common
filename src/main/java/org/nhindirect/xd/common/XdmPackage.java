@@ -31,7 +31,7 @@ public class XdmPackage {
     @Deprecated
     private static final String SUFFIX = ".xml";
     private static final int BUFFER = 2048;
-    private static final String XDM_SUB_FOLDER = "IHE_XDM/SUBSET01";
+    private static final String XDM_SUB_FOLDER = "IHE_XDM/SUBSET01/";
     private static final String XDM_METADATA_FILE = "METADATA.xml";
 
     public XdmPackage() {
@@ -61,7 +61,6 @@ public class XdmPackage {
 
             ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(dest));
             zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
-
             for (DirectDocument2 document : documents.getDocuments()) {
                 if (document.getData() != null) {
                     String fileName = document.getMetadata().getId() ;
