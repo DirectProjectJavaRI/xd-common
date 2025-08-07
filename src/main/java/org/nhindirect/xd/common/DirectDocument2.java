@@ -44,7 +44,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.activation.MimetypesFileTypeMap;
+import jakarta.activation.MimetypesFileTypeMap;
 import javax.xml.namespace.QName;
 
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.ClassificationType;
@@ -142,7 +142,7 @@ public class DirectDocument2
         this.data = data;
         
         this.metadata.setHash(getSha1Hash(data));
-        this.metadata.setSize(new Long(data.length));
+        this.metadata.setSize(Long.valueOf(data.length));
     }
 
     /**

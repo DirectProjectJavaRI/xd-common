@@ -38,9 +38,9 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPMessage;
 
 /**
  * Test class for methods in DirectSOAPHandler.
