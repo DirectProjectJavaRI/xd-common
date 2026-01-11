@@ -19,17 +19,19 @@ import org.nhindirect.config.repository.TrustBundleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.DEFINED_PORT)
+@AutoConfigureRestTestClient
 @TestPropertySource("classpath:bootstrap.properties")
 public abstract class SpringBaseTest
 {
 	protected String filePrefix;
 	
 	@Autowired
-	protected TestRestTemplate testRestTemplate;
+	protected RestTestClient restTestClient;
 	
 	@Autowired
 	protected AddressRepository addressRepo;
