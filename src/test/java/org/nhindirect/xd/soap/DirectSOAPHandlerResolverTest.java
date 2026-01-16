@@ -36,8 +36,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import javax.xml.ws.handler.Handler;
-import javax.xml.ws.handler.PortInfo;
+import jakarta.xml.ws.handler.Handler;
+import jakarta.xml.ws.handler.PortInfo;
 
 /**
  * Test class for methods in DirectHandlerResolver.

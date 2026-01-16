@@ -32,7 +32,7 @@ import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
 
 import java.io.File;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import org.nhindirect.xd.transform.exception.TransformationException;
 

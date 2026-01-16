@@ -30,7 +30,7 @@ package org.nhindirect.xd.transform;
 
 import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
 
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMessage;
 
 import org.nhindirect.xd.transform.exception.TransformationException;
 

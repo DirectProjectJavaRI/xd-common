@@ -35,21 +35,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.servlet.ServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.servlet.ServletRequest;
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPEnvelope;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPHeader;
-import javax.xml.soap.SOAPHeaderElement;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.soap.SOAPPart;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.SOAPHandler;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
+import jakarta.xml.soap.SOAPBody;
+import jakarta.xml.soap.SOAPElement;
+import jakarta.xml.soap.SOAPEnvelope;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPHeader;
+import jakarta.xml.soap.SOAPHeaderElement;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPPart;
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPHandler;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.soap.type.MetadataLevelEnum;
@@ -124,7 +124,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                 
                 boolean isACK = !context.containsKey(ENDPOINT_ADDRESS);
                 
-                SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().getId());
+                SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().threadId());
 
                 SOAPMessage msg = ((SOAPMessageContext) context).getMessage();
                 dumpSOAPMessage(msg);
@@ -216,7 +216,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     }
                 }
                 if (isACK){
-                    SafeThreadData.clean(Thread.currentThread().getId());
+                    SafeThreadData.clean(Thread.currentThread().threadId());
                 }
                 
             }
@@ -231,10 +231,10 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     // Issue 249 - before handling the inbound case, we should clear 
                     // out the old thread data if we don't this the To: (SMTP recipients) will 
                     // append from the previous thread data 
-                    SafeThreadData.clean(Thread.currentThread().getId());
+                    SafeThreadData.clean(Thread.currentThread().threadId());
                 }
                 
-                SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().getId());
+                SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().threadId());
                 
                 ServletRequest sr = (ServletRequest) context.get(MessageContext.SERVLET_REQUEST);
                 if (sr != null)
@@ -250,8 +250,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                 SOAPEnvelope env = sp.getEnvelope();
                 SOAPHeader sh = env.getHeader();
 
-                @SuppressWarnings("unchecked")
-                Iterator<Node> it = sh.extractAllHeaderElements();
+                Iterator<SOAPHeaderElement> it = sh.extractAllHeaderElements();
                 while (it.hasNext())
                 {
                     try{

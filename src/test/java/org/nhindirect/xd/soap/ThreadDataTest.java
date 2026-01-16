@@ -54,7 +54,7 @@ public class ThreadDataTest
         // Compare against current size (which may affected by previous tests)
         int mapSize = map.size();
 
-        ThreadData t1 = new ThreadData(new Long(99991));
+        ThreadData t1 = new ThreadData(Long.valueOf(99991));
         t1.setAction("action.1");
         t1.setFrom("from.1");
         t1.setMessageId("messageId.1");
@@ -66,16 +66,16 @@ public class ThreadDataTest
         t1.setTo("to.1");
        
         assertEquals(mapSize + 1, map.size());
-        assertEquals(true, map.containsKey(new Long(99991)));
-        assertEquals("action.1", map.get(new Long(99991)).get(ThreadData.ACTION));        
-        assertEquals("from.1", map.get(new Long(99991)).get(ThreadData.FROM));    
-        assertEquals("messageId.1", map.get(new Long(99991)).get(ThreadData.MESSAGE));    
-        assertEquals("pid.1", map.get(new Long(99991)).get(ThreadData.PID));    
-        assertEquals("relatesTo.1", map.get(new Long(99991)).get(ThreadData.RELATESTO));    
-        assertEquals("remoteHost.1", map.get(new Long(99991)).get(ThreadData.REMOTEHOST));    
-        assertEquals("replyAddress.1", map.get(new Long(99991)).get(ThreadData.REPLY));    
-        assertEquals("thisHost.1", map.get(new Long(99991)).get(ThreadData.THISHOST));    
-        assertEquals("to.1", map.get(new Long(99991)).get(ThreadData.TO));    
+        assertEquals(true, map.containsKey(Long.valueOf(99991)));
+        assertEquals("action.1", map.get(Long.valueOf(99991)).get(ThreadData.ACTION));        
+        assertEquals("from.1", map.get(Long.valueOf(99991)).get(ThreadData.FROM));    
+        assertEquals("messageId.1", map.get(Long.valueOf(99991)).get(ThreadData.MESSAGE));    
+        assertEquals("pid.1", map.get(Long.valueOf(99991)).get(ThreadData.PID));    
+        assertEquals("relatesTo.1", map.get(Long.valueOf(99991)).get(ThreadData.RELATESTO));    
+        assertEquals("remoteHost.1", map.get(Long.valueOf(99991)).get(ThreadData.REMOTEHOST));    
+        assertEquals("replyAddress.1", map.get(Long.valueOf(99991)).get(ThreadData.REPLY));    
+        assertEquals("thisHost.1", map.get(Long.valueOf(99991)).get(ThreadData.THISHOST));    
+        assertEquals("to.1", map.get(Long.valueOf(99991)).get(ThreadData.TO));    
         
         assertEquals("action.1", t1.getAction());        
         assertEquals("from.1", t1.getFrom());    
@@ -89,9 +89,9 @@ public class ThreadDataTest
         
         t1.setTo("to.1.1");
 
-        assertEquals("to.1.1", map.get(new Long(99991)).get(ThreadData.TO));    
+        assertEquals("to.1.1", map.get(Long.valueOf(99991)).get(ThreadData.TO));    
         
-        ThreadData t2 = new ThreadData(new Long(99992));
+        ThreadData t2 = new ThreadData(Long.valueOf(99992));
         t2.setAction("action.2");
         t2.setFrom("from.2");
         t2.setMessageId("messageId.2");
@@ -103,10 +103,10 @@ public class ThreadDataTest
         t2.setTo("to.2");
         
         assertEquals(mapSize + 2, map.size());
-        assertEquals(true, map.containsKey(new Long(99992)));    
+        assertEquals(true, map.containsKey(Long.valueOf(99992)));    
         
-        ThreadData.clean(new Long(99991));
-        assertTrue(map.get(new Long(99991)) == null);
+        ThreadData.clean(Long.valueOf(99991));
+        assertTrue(map.get(Long.valueOf(99991)) == null);
         
         String out = t1.toString();
         assertTrue(StringUtils.containsIgnoreCase(out, "No map found"));

@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>xd-common</artifactId>
     <name>NHIN Direct XD* Common Library</name>
-    <version>8.2.0-SNAPSHOT</version>
+    <version>9.0.0-SNAPSHOT</version>
     <description>Library for common XD* operations and objects</description>
     <inceptionYear>2010</inceptionYear>
     <url>https://github.com/DirectProjectJavaRI/xd-common</url>     
@@ -36,46 +36,45 @@
     <parent>
 	   <groupId>org.springframework.boot</groupId>
 	   <artifactId>spring-boot-dependencies</artifactId>
-	   <version>2.5.2</version>
+	   <version>4.0.1</version>
 	   <relativePath />
     </parent> 
 	<scm>
 	     <url>https://github.com/DirectProjectJavaRI/xd-common.git</url>  
 	     <connection>scm:hg:https://github.com/DirectProjectJavaRI/xd-common.git</connection>
 	</scm> 	 
-    <properties>
-      <javax-mail.version>1.6.2</javax-mail.version>
-      <commons-io.version>2.8.0</commons-io.version>
-    </properties>	
     <dependencies>    
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>   
+            <artifactId>spring-boot-starter-web</artifactId>             
         </dependency>	    
         <dependency>
             <groupId>org.nhind</groupId>
             <artifactId>config-service-client</artifactId>
-            <version>8.1.0</version>
-            <scope>compile</scope>
+            <version>9.0.0-SNAPSHOT</version>
+            <scope>compile</scope>          
         </dependency>       
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>  	
-	    <dependency>
-	    	<groupId>commons-io</groupId>
-	    	<artifactId>commons-io</artifactId>
-	    	<version>${commons-io.version}</version>
-	    </dependency>	 
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-			<version>${javax-mail.version}</version>
-		</dependency>  
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
+        </dependency>     
+		<dependency>
+		  <groupId>jakarta.xml.ws</groupId>
+		  <artifactId>jakarta.xml.ws-api</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.sun.xml.messaging.saaj</groupId>
+            <artifactId>saaj-impl</artifactId>
+        </dependency>        		
  	    <dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter</artifactId>
@@ -84,19 +83,19 @@
         <dependency>
             <groupId>org.nhind</groupId>
             <artifactId>config-service-jar</artifactId>
-            <version>8.1.0</version>
+            <version>9.0.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>  	 
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-test</artifactId>
 		    <scope>test</scope>
-		</dependency>	
-	    <dependency>
-	    	<groupId>org.springframework.boot</groupId>
-	    	<artifactId>spring-boot-starter-security</artifactId>
-	    	<scope>test</scope>
-	    </dependency>	
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-resttestclient</artifactId>
+		    <scope>test</scope>
+		</dependency>
 		<dependency>
 		    <groupId>com.h2database</groupId>
 		    <artifactId>h2</artifactId>
@@ -106,7 +105,7 @@
 	       <groupId>io.r2dbc</groupId>
 	       <artifactId>r2dbc-h2</artifactId>
 	       <scope>test</scope>
-	    </dependency>	    			        	       
+	    </dependency>		        			        	       
     </dependencies>
 
     <build>
@@ -132,7 +131,6 @@
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-webdav-jackrabbit</artifactId>
-				<version>3.1.0</version>
 			</extension>
         </extensions>
 
@@ -145,14 +143,13 @@
                     <archive>
                         <index />
                     </archive>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>    
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
-                <version>1.9</version>
                 <executions>
                     <execution>
                         <goals>
@@ -195,7 +192,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>3.1.1</version>
             </plugin>
 		    <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
@@ -218,7 +214,7 @@
 					<docfilessubdirs>true</docfilessubdirs>
 					<detectJavaApiLink>true</detectJavaApiLink>
 					<detectLinks>true</detectLinks>
-					<source>1.8</source>
+					<source>17</source>
 					<show>public</show>
                     <excludePackageNames>
                         org.nhindirect.xd.transform.parse.ccd.jaxb
@@ -278,7 +274,7 @@
 					<docfilessubdirs>true</docfilessubdirs>
 					<detectJavaApiLink>true</detectJavaApiLink>
 					<detectLinks>true</detectLinks>
-					<source>1.8</source>
+					<source>17</source>
 					<show>public</show>
                     <excludePackageNames>
                         org.nhindirect.xd.transform.parse.ccd.jaxb
@@ -289,7 +285,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <configuration>
-                    <targetJdk>1.8</targetJdk>
+                    <targetJdk>17</targetJdk>
                 </configuration>
             </plugin>
             <plugin>
@@ -299,7 +295,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>3.1.1</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
