@@ -402,24 +402,27 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
             return;
         }
 
-        log.info("");
-        log.info("--------------------");
-        log.info(" DUMP OF SOAP MESSAGE");
-        log.info("--------------------");
 
-        try
+        if (log.isDebugEnabled())
         {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            msg.writeTo(baos);
-            log.info(baos.toString(getMessageEncoding(msg)));
-
-            // show included values
-            String values = msg.getSOAPBody().getTextContent();
-            log.trace("Included values:" + values);
-        }
-        catch (Exception e)
-        {
-            log.warn("Unable to dump soap message.", e);
+	        try
+	        {
+	            log.debug("");
+	            log.debug("--------------------");
+	            log.debug(" DUMP OF SOAP MESSAGE");
+	            log.debug("--------------------");
+	        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            msg.writeTo(baos);
+	            log.info(baos.toString(getMessageEncoding(msg)));
+	
+	            // show included values
+	            String values = msg.getSOAPBody().getTextContent();
+	            log.trace("Included values:" + values);
+	        }
+	        catch (Exception e)
+	        {
+	            log.warn("Unable to dump soap message.", e);
+	        }
         }
     }
 
