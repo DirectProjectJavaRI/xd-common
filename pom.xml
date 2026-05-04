@@ -36,7 +36,7 @@
     <parent>
 	   <groupId>org.springframework.boot</groupId>
 	   <artifactId>spring-boot-dependencies</artifactId>
-	   <version>4.0.1</version>
+	   <version>4.0.6</version>
 	   <relativePath />
     </parent> 
 	<scm>
@@ -74,7 +74,12 @@
         <dependency>
             <groupId>com.sun.xml.messaging.saaj</groupId>
             <artifactId>saaj-impl</artifactId>
-        </dependency>        		
+        </dependency>      
+		<dependency>
+		    <groupId>com.sun.xml.ws</groupId>
+		    <artifactId>jaxws-rt</artifactId>
+		    <version>4.0.3</version>
+		</dependency>
  	    <dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter</artifactId>
@@ -150,6 +155,7 @@
             <plugin>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
+                <version>4.0.3</version>
                 <executions>
                     <execution>
                         <goals>
@@ -169,13 +175,6 @@
                         <phase>generate-sources</phase>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.xml.ws</groupId>
-                        <artifactId>jaxws-api</artifactId>
-                        <version>2.1</version>
-                    </dependency>               
-                 </dependencies>
                 <configuration>
                     <sourceDestDir>${project.build.directory}/generated-sources/jaxws-wsimport
                     </sourceDestDir>
