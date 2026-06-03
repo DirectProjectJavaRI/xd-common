@@ -266,7 +266,9 @@ public class DirectDocument2
                 sourcePatientIdValue = sourcePatient.getLocalId() + "^^^&" + sourcePatient.getLocalOrg() + "&ISO";
             }
             addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_ID, sourcePatientIdValue));
-            addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_INFO, sourcePatient));
+            if (sourcePatient.getLocalId() != null || sourcePatient.getLocalOrg() != null) {
+                addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_INFO, sourcePatient));
+            }
             addSlot(slots, makeSlot(SlotType1Enum.HASH, hash));
             addSlot(slots, makeSlot(SlotType1Enum.SIZE, size == null ? null : String.valueOf(size)));
             addSlot(slots, makeSlot(SlotType1Enum.URI, uri == null ? null : uri));
