@@ -239,17 +239,29 @@ public class XdmPackage {
 
                 // Read data
               //  if (StringUtils.contains(subsetDirspec, StringUtils.remove(XDM_SUB_FOLDER, "/"))
-                if (StringUtils.contains(subsetDirspec,XDM_SUB_FOLDER)
-                        && !StringUtils.contains(zname, ".xsl") && !StringUtils.contains(zname, XDM_METADATA_FILE)) {
+                if (StringUtils.containsIgnoreCase(subsetDirspec, XDM_SUB_FOLDER)
+                        && !StringUtils.containsIgnoreCase(zname, ".xsl")
+                        && !StringUtils.containsIgnoreCase(zname, XDM_METADATA_FILE)) {
                     ByteArrayOutputStream byteArrayOutputStream = readData(zipFile, zipEntry);
 
+                    // Try hash-based lookup first
                     String digest = DirectDocument2.getSha1Hash(byteArrayOutputStream.toString());
-                    System.out.println(digest);
                     DirectDocument2 document = documents.getDocumentByHash(digest);
 
+                    // Fall back to URI-based lookup using the filename portion of the zip entry
                     if (document == null) {
-                        log.warn("Unable to find metadata for document by hash. Creating document with no supporting metadata.");
+                        String fileName = zname.substring(zname.lastIndexOf('/') + 1);
+                        for (DirectDocument2 doc : documents.getDocuments()) {
+                            String uri = doc.getMetadata().getURI();
+                            if (uri != null && StringUtils.equalsIgnoreCase(fileName, uri)) {
+                                document = doc;
+                                break;
+                            }
+                        }
+                    }
 
+                    if (document == null) {
+                        log.warn("Unable to find metadata for document by hash or URI. Creating document with no supporting metadata.");
                         document = new DirectDocument2();
                         documents.getDocuments().add(document);
                     }
@@ -307,11 +319,8 @@ public class XdmPackage {
    protected static  boolean matchName(String zname, String subsetDirspec, String subsetFilespec) {
         zname = zname.replaceAll("\\\\", "/");
         String zipFilespec = subsetDirspec + "/" + subsetFilespec;
-        boolean ret = StringUtils.equals(zname, zipFilespec);
-
-
-        return ret;
-    }     
+        return StringUtils.equalsIgnoreCase(zname, zipFilespec);
+    }
       
     /**
      * Determine whether a filename matches the subset directory and file name.
