@@ -108,6 +108,9 @@ public class DirectDocumentUtils
     
     public static InternationalStringType makeInternationalStringType(String value)
     {
+        if (value == null)
+            return null;
+
         InternationalStringType name = new InternationalStringType();
         List<LocalizedStringType> names = name.getLocalizedString();
         LocalizedStringType lname = new LocalizedStringType();
