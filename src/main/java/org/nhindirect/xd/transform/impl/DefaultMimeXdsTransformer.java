@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.UUID;
 
@@ -228,7 +229,7 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
         submissionSet.setAuthorTelecommunication(auth); // TODO: format this correctly
         submissionSet.setSourceId("TODO"); // TODO: "UUID URN mapped by configuration to sending organization"
         submissionSet.setSubmissionTime(sentDate);
-        submissionSet.setUniqueId(UUID.randomUUID().toString());
+        submissionSet.setUniqueId(generateOid());
         for (Address address : recipients) {
             submissionSet.getIntendedRecipient().add("||^^Internet^" + address.toString());
         }
@@ -271,7 +272,7 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
 
         // (R) Minimal Metadata Source
         metadata.setMimeType(xdsMimeType);
-        metadata.setUniqueId(UUID.randomUUID().toString());
+        metadata.setUniqueId(generateOid());
 
         // (R2) Minimal Metadata Source
         if (xdsFormatCode != null) {
@@ -284,6 +285,11 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
         document.setData(xdsDocument);
 
         return document;
+    }
+
+    private static String generateOid() {
+        UUID uuid = UUID.randomUUID();
+        return "2.25." + new BigInteger(uuid.toString().replace("-", ""), 16);
     }
 
     private static byte[] read(BodyPart bodyPart) throws MessagingException, IOException {

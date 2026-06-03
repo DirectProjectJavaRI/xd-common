@@ -261,7 +261,11 @@ public class DirectDocument2
             addSlot(slots, makeSlot(SlotType1Enum.LANGUAGE_CODE, languageCode));
             addSlot(slots, makeSlot(SlotType1Enum.SERVICE_START_TIME, serviceStartTime != null ? (new SimpleDateFormat("yyyyMMddHHmm")).format(serviceStartTime) : null));
             addSlot(slots, makeSlot(SlotType1Enum.SERVICE_STOP_TIME, serviceStopTime != null ? (new SimpleDateFormat("yyyyMMddHHmm")).format(serviceStopTime) : null));
-            addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_ID, sourcePatient.getLocalId() + "^^^&" + sourcePatient.getLocalOrg() + "&ISO"));
+            String sourcePatientIdValue = null;
+            if (sourcePatient.getLocalId() != null || sourcePatient.getLocalOrg() != null) {
+                sourcePatientIdValue = sourcePatient.getLocalId() + "^^^&" + sourcePatient.getLocalOrg() + "&ISO";
+            }
+            addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_ID, sourcePatientIdValue));
             addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_INFO, sourcePatient));
             addSlot(slots, makeSlot(SlotType1Enum.HASH, hash));
             addSlot(slots, makeSlot(SlotType1Enum.SIZE, size == null ? null : String.valueOf(size)));
@@ -274,7 +278,7 @@ public class DirectDocument2
             ClassificationType authorClassification = new ClassificationType();
             authorClassification.setClassifiedObject(id);
             authorClassification.setNodeRepresentation(""); // required empty string
-            authorClassification.setId(ClassificationTypeEnum.DOC_AUTHOR.getClassificationId());
+            authorClassification.setId(UUID.randomUUID().toString());
             authorClassification.setClassificationScheme(ClassificationTypeEnum.DOC_AUTHOR.getClassificationScheme());
 
             List<SlotType1> authorClassificationSlots = authorClassification.getSlot();
@@ -292,7 +296,7 @@ public class DirectDocument2
                 classCodeClassification.setClassifiedObject(id);
                 classCodeClassification.setNodeRepresentation(classCode);
                 classCodeClassification.setName(makeInternationalStringType(classCode_localized));
-                classCodeClassification.setId(ClassificationTypeEnum.DOC_CLASS_CODE.getClassificationId());
+                classCodeClassification.setId(UUID.randomUUID().toString());
                 classCodeClassification.setClassificationScheme(ClassificationTypeEnum.DOC_CLASS_CODE.getClassificationScheme());
     
                 List<SlotType1> classCodeClassificationSlots = classCodeClassification.getSlot();
@@ -308,7 +312,7 @@ public class DirectDocument2
                 confidentialityCodeClassification.setClassifiedObject(id);
                 confidentialityCodeClassification.setNodeRepresentation(confidentialityCode);
                 confidentialityCodeClassification.setName(makeInternationalStringType(confidentialityCode_localized));
-                confidentialityCodeClassification.setId(ClassificationTypeEnum.DOC_CONFIDENTIALITY_CODE.getClassificationId());
+                confidentialityCodeClassification.setId(UUID.randomUUID().toString());
                 confidentialityCodeClassification.setClassificationScheme(ClassificationTypeEnum.DOC_CONFIDENTIALITY_CODE.getClassificationScheme());
     
                 List<SlotType1> confidentialityCodeClassificationSlots = confidentialityCodeClassification.getSlot();
@@ -324,7 +328,7 @@ public class DirectDocument2
                 formatCodeClassification.setClassifiedObject(id);
                 formatCodeClassification.setNodeRepresentation(formatCode);
                 formatCodeClassification.setName(makeInternationalStringType(formatCode_localized));
-                formatCodeClassification.setId(ClassificationTypeEnum.DOC_FORMAT_CODE.getClassificationId());
+                formatCodeClassification.setId(UUID.randomUUID().toString());
                 formatCodeClassification.setClassificationScheme(ClassificationTypeEnum.DOC_FORMAT_CODE.getClassificationScheme());
     
                 List<SlotType1> formatCodeClassificationSlots = formatCodeClassification.getSlot();
@@ -340,7 +344,7 @@ public class DirectDocument2
                 healthcareFacilityTypeCodeClassification.setClassifiedObject(id);
                 healthcareFacilityTypeCodeClassification.setNodeRepresentation(healthcareFacilityTypeCode);
                 healthcareFacilityTypeCodeClassification.setName(makeInternationalStringType(healthcareFacilityTypeCode_localized));
-                healthcareFacilityTypeCodeClassification.setId(ClassificationTypeEnum.DOC_HEALTHCARE_FACILITY_TYPE_CODE.getClassificationId());
+                healthcareFacilityTypeCodeClassification.setId(UUID.randomUUID().toString());
                 healthcareFacilityTypeCodeClassification.setClassificationScheme(ClassificationTypeEnum.DOC_HEALTHCARE_FACILITY_TYPE_CODE.getClassificationScheme());
     
                 List<SlotType1> healthcareFacilityTypeCodeClassificationSlots = healthcareFacilityTypeCodeClassification.getSlot();
@@ -356,7 +360,7 @@ public class DirectDocument2
                 practiceSettingCodeClassification.setClassifiedObject(id);
                 practiceSettingCodeClassification.setNodeRepresentation(practiceSettingCode);
                 practiceSettingCodeClassification.setName(makeInternationalStringType(practiceSettingCode_localized));
-                practiceSettingCodeClassification.setId(ClassificationTypeEnum.DOC_PRACTICE_SETTING_CODE.getClassificationId());
+                practiceSettingCodeClassification.setId(UUID.randomUUID().toString());
                 practiceSettingCodeClassification.setClassificationScheme(ClassificationTypeEnum.DOC_PRACTICE_SETTING_CODE.getClassificationScheme());
     
                 List<SlotType1> practiceSettingCodeClassificationSlots = practiceSettingCodeClassification.getSlot();
@@ -372,7 +376,7 @@ public class DirectDocument2
                 loincClassification.setClassifiedObject(id);
                 loincClassification.setNodeRepresentation(loinc);
                 loincClassification.setName(makeInternationalStringType(loinc_localized));
-                loincClassification.setId(ClassificationTypeEnum.DOC_LOINC.getClassificationId());
+                loincClassification.setId(UUID.randomUUID().toString());
                 loincClassification.setClassificationScheme(ClassificationTypeEnum.DOC_LOINC.getClassificationScheme());
     
                 List<SlotType1> loincClassificationSlots = loincClassification.getSlot();
@@ -381,24 +385,24 @@ public class DirectDocument2
                 eot.getClassification().add(loincClassification);
             }
 
-            // patientId
-            ExternalIdentifierType xdsDocumentEntry_patientId = new ExternalIdentifierType();
-            xdsDocumentEntry_patientId.setValue(patientId);
-            xdsDocumentEntry_patientId.setRegistryObject(id);
-            xdsDocumentEntry_patientId.setId(ExternalIdentifierTypeEnum.DOC_PATIENT_ID.getIdentificationId());
-            xdsDocumentEntry_patientId.setIdentificationScheme(ExternalIdentifierTypeEnum.DOC_PATIENT_ID.getIdentificationScheme());
-            xdsDocumentEntry_patientId.setName(makeInternationalStringType(ExternalIdentifierTypeEnum.DOC_PATIENT_ID.getLocalizedString()));
-
-            eot.getExternalIdentifier().add(xdsDocumentEntry_patientId);
+            // patientId — omit when not known (R2 in XDR minimal metadata)
+            if (patientId != null) {
+                ExternalIdentifierType xdsDocumentEntry_patientId = new ExternalIdentifierType();
+                xdsDocumentEntry_patientId.setValue(patientId);
+                xdsDocumentEntry_patientId.setRegistryObject(id);
+                xdsDocumentEntry_patientId.setId(UUID.randomUUID().toString());
+                xdsDocumentEntry_patientId.setIdentificationScheme(ExternalIdentifierTypeEnum.DOC_PATIENT_ID.getIdentificationScheme());
+                xdsDocumentEntry_patientId.setName(makeInternationalStringType(ExternalIdentifierTypeEnum.DOC_PATIENT_ID.getLocalizedString()));
+                eot.getExternalIdentifier().add(xdsDocumentEntry_patientId);
+            }
 
             // uniqueId
             ExternalIdentifierType xdsDocumentEntry_uniqueId = new ExternalIdentifierType();
             xdsDocumentEntry_uniqueId.setValue(uniqueId);
             xdsDocumentEntry_uniqueId.setRegistryObject(id);
-            xdsDocumentEntry_uniqueId.setId(ExternalIdentifierTypeEnum.DOC_UNIQUE_ID.getIdentificationId());
+            xdsDocumentEntry_uniqueId.setId(UUID.randomUUID().toString());
             xdsDocumentEntry_uniqueId.setIdentificationScheme(ExternalIdentifierTypeEnum.DOC_UNIQUE_ID.getIdentificationScheme());
             xdsDocumentEntry_uniqueId.setName(makeInternationalStringType(ExternalIdentifierTypeEnum.DOC_UNIQUE_ID.getLocalizedString()));
-
             eot.getExternalIdentifier().add(xdsDocumentEntry_uniqueId);
 
             return eot;
