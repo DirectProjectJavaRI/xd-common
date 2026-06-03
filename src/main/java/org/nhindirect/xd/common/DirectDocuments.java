@@ -359,18 +359,20 @@ public class DirectDocuments {
 
             rpt.getClassification().add(authorClassification);
 
-            // contentTypeCode
-            ClassificationType contentTypeCodeClassification = new ClassificationType();
-            contentTypeCodeClassification.setClassifiedObject(id);
-            contentTypeCodeClassification.setNodeRepresentation(contentTypeCode);
-            contentTypeCodeClassification.setName(makeInternationalStringType(contentTypeCode_localized));
-            contentTypeCodeClassification.setId(UUID.randomUUID().toString());
-            contentTypeCodeClassification.setClassificationScheme(ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getClassificationScheme());
+            // contentTypeCode — omit when code is not known
+            if (contentTypeCode != null) {
+                ClassificationType contentTypeCodeClassification = new ClassificationType();
+                contentTypeCodeClassification.setClassifiedObject(id);
+                contentTypeCodeClassification.setNodeRepresentation(contentTypeCode);
+                contentTypeCodeClassification.setName(makeInternationalStringType(contentTypeCode_localized));
+                contentTypeCodeClassification.setId(UUID.randomUUID().toString());
+                contentTypeCodeClassification.setClassificationScheme(ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getClassificationScheme());
 
-            List<SlotType1> contentTypeCodeClassificationSlots = contentTypeCodeClassification.getSlot();
-            addSlot(contentTypeCodeClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME, ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getCodingScheme()));
+                List<SlotType1> contentTypeCodeClassificationSlots = contentTypeCodeClassification.getSlot();
+                addSlot(contentTypeCodeClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME, ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getCodingScheme()));
 
-            rpt.getClassification().add(contentTypeCodeClassification);
+                rpt.getClassification().add(contentTypeCodeClassification);
+            }
 
             // uniqueId
             ExternalIdentifierType xdsSubmissionSet_uniqueId = new ExternalIdentifierType();
