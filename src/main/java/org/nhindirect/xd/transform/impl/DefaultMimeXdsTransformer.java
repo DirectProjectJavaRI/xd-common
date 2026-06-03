@@ -156,6 +156,16 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
                         log.info("DocumentType: " + documentType.toString());
                     }
 
+                    // Skip plain text and unknown body parts — these are Direct message body text,
+                    // not clinical documents. XDS requires metadata (formatCode, classCode, etc.)
+                    // that cannot be derived from untyped text content.
+                    if (DirectDocumentType.TEXT.equals(documentType) || DirectDocumentType.UNKNOWN.equals(documentType)) {
+                        if (log.isInfoEnabled()) {
+                            log.info("Skipping non-clinical body part of type: " + documentType);
+                        }
+                        continue;
+                    }
+
                   
 
                     // Get the format code and MIME type
