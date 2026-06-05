@@ -273,6 +273,16 @@ public class XdmPackage {
 
         zipFile.close();
 
+        // Clear relative URIs (XDM package filenames like "CCDAAMB.XML") now that data has been
+        // loaded. They are not valid absolute URLs in XDR submissions. This must happen AFTER the
+        // data-loading loop, which uses the URI slot for filename matching.
+        for (DirectDocument2 document : documents.getDocuments()) {
+            String uri = document.getMetadata().getURI();
+            if (uri != null && !uri.startsWith("http://") && !uri.startsWith("https://")) {
+                document.getMetadata().setURI(null);
+            }
+        }
+
         XdmPackage xdmPackage = new XdmPackage();
         xdmPackage.setDocuments(documents);
 
