@@ -211,7 +211,7 @@ public class DirectDocuments {
                 for (SlotType1 slot : at.getSlot()) {
                     if (SlotType1Enum.SUBMISSION_SET_STATUS.matches(slot.getName())) {
                         if (slotNotEmpty(slot)) {
-                            getDocumentById(at.getTargetObject()).getMetadata().setSubmissionSetStatus(slot.getName());
+                            getDocumentById(at.getTargetObject()).getMetadata().setSubmissionSetStatus(slot.getValueList().getValue().get(0));
                         }
                     }
                 }
@@ -219,13 +219,24 @@ public class DirectDocuments {
         }
 
         // If the XDM SubmissionSet has no contentTypeCode (common in limited-metadata packages),
-        // derive one from the first document's classCode so the XDR validator is satisfied.
+        // derive one from the document's classCode, LOINC type code, or format code so the XDR
+        // validator is satisfied. XDM limited metadata typically lacks classCode, so fall back
+        // through available codes in order of preference.
         if (submissionSet.getContentTypeCode() == null && !documents.isEmpty()) {
-            String classCode = documents.get(0).getMetadata().getClassCode();
-            String classCode_localized = documents.get(0).getMetadata().getClassCode_localized();
-            if (classCode != null) {
-                submissionSet.setContentTypeCode(classCode);
-                submissionSet.setContentTypeCode_localized(classCode_localized != null ? classCode_localized : classCode);
+            DirectDocument2.Metadata docMeta = documents.get(0).getMetadata();
+            String code = docMeta.getClassCode();
+            String codeLocalized = docMeta.getClassCode_localized();
+            if (code == null) {
+                code = docMeta.getLoinc();
+                codeLocalized = docMeta.getLoinc_localized();
+            }
+            if (code == null) {
+                code = docMeta.getFormatCode();
+                codeLocalized = docMeta.getFormatCode_localized();
+            }
+            if (code != null) {
+                submissionSet.setContentTypeCode(code);
+                submissionSet.setContentTypeCode_localized(codeLocalized != null ? codeLocalized : code);
             }
         }
     }
