@@ -271,10 +271,7 @@ public class DirectDocument2
             }
             addSlot(slots, makeSlot(SlotType1Enum.HASH, hash));
             addSlot(slots, makeSlot(SlotType1Enum.SIZE, size == null ? null : String.valueOf(size)));
-            // Only emit URI when it's an absolute HTTP/HTTPS URL; XDM relative filenames
-            // are not valid in XDR submissions and cause schema validation failures.
-            String absoluteUri = (uri != null && (uri.startsWith("http://") || uri.startsWith("https://"))) ? uri : null;
-            addSlot(slots, makeSlot(SlotType1Enum.URI, absoluteUri));
+            addSlot(slots, makeSlot(SlotType1Enum.URI, uri == null ? null : uri));
 
             eot.setName(makeInternationalStringType(classCode_localized));
             eot.setDescription(makeInternationalStringType(description));
