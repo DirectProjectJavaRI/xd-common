@@ -217,6 +217,17 @@ public class DirectDocuments {
                 }
             }
         }
+
+        // If the XDM SubmissionSet has no contentTypeCode (common in limited-metadata packages),
+        // derive one from the first document's classCode so the XDR validator is satisfied.
+        if (submissionSet.getContentTypeCode() == null && !documents.isEmpty()) {
+            String classCode = documents.get(0).getMetadata().getClassCode();
+            String classCode_localized = documents.get(0).getMetadata().getClassCode_localized();
+            if (classCode != null) {
+                submissionSet.setContentTypeCode(classCode);
+                submissionSet.setContentTypeCode_localized(classCode_localized != null ? classCode_localized : classCode);
+            }
+        }
     }
 
     public DirectDocument2 getDocumentById(String targetObject) {

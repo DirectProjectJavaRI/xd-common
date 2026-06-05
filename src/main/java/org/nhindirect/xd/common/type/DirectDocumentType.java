@@ -194,7 +194,7 @@ public enum DirectDocumentType
         public boolean matches(String data, String contentType, String fileName)
         {
             // FIXME: Bad assumption
-            return StringUtils.contains(fileName, ".zip");
+            return StringUtils.containsIgnoreCase(fileName, ".zip");
         }  
     },
     PDF(null, MimeType.APPLICATION_PDF),
