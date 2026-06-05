@@ -239,6 +239,27 @@ public class DirectDocuments {
                 submissionSet.setContentTypeCode_localized(codeLocalized != null ? codeLocalized : code);
             }
         }
+
+        // Apply synthetic defaults for metadata fields required by XDS validators but absent
+        // from XDM limited-metadata packages. Use the LOINC type code as classCode when available
+        // (semantically closest), otherwise fall back to a generic CDA class code. Confidentiality,
+        // facility type, and practice setting use safe generic defaults matching the existing CDA path.
+        for (DirectDocument2 document : documents) {
+            DirectDocument2.Metadata meta = document.getMetadata();
+            if (meta.getClassCode() == null) {
+                String loinc = meta.getLoinc();
+                meta.setClassCode(loinc != null ? loinc : "34133-9", true);
+            }
+            if (meta.getConfidentialityCode() == null) {
+                meta.setConfidentialityCode("N", true);
+            }
+            if (meta.getHealthcareFacilityTypeCode() == null) {
+                meta.setHealthcareFacilityTypeCode("Outpatient", true);
+            }
+            if (meta.getPracticeSettingCode() == null) {
+                meta.setPracticeSettingCode("General Medicine", true);
+            }
+        }
     }
 
     public DirectDocument2 getDocumentById(String targetObject) {
