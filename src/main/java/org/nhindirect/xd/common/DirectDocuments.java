@@ -79,11 +79,19 @@ import org.nhindirect.xd.transform.util.XmlUtils;
 public class DirectDocuments {
 
     private List<DirectDocument2> documents;
-    private SubmissionSet submissionSet;	
+    private SubmissionSet submissionSet;
+    private final SyntheticMetadataDefaults syntheticDefaults;
 
     public DirectDocuments() {
         this.documents = new ArrayList<DirectDocument2>();
         this.submissionSet = new SubmissionSet();
+        this.syntheticDefaults = null;
+    }
+
+    public DirectDocuments(SyntheticMetadataDefaults syntheticDefaults) {
+        this.documents = new ArrayList<DirectDocument2>();
+        this.submissionSet = new SubmissionSet();
+        this.syntheticDefaults = syntheticDefaults;
     }
 
     /**
@@ -241,23 +249,24 @@ public class DirectDocuments {
         }
 
         // Apply synthetic defaults for metadata fields required by XDS validators but absent
-        // from XDM limited-metadata packages. Use the LOINC type code as classCode when available
-        // (semantically closest), otherwise fall back to a generic CDA class code. Confidentiality,
-        // facility type, and practice setting use safe generic defaults matching the existing CDA path.
-        for (DirectDocument2 document : documents) {
-            DirectDocument2.Metadata meta = document.getMetadata();
-            if (meta.getClassCode() == null) {
-                String loinc = meta.getLoinc();
-                meta.setClassCode(loinc != null ? loinc : "34133-9", true);
-            }
-            if (meta.getConfidentialityCode() == null) {
-                meta.setConfidentialityCode("N", true);
-            }
-            if (meta.getHealthcareFacilityTypeCode() == null) {
-                meta.setHealthcareFacilityTypeCode("Outpatient", true);
-            }
-            if (meta.getPracticeSettingCode() == null) {
-                meta.setPracticeSettingCode("General Medicine", true);
+        // from XDM limited-metadata packages. Only runs when a configured SyntheticMetadataDefaults
+        // is present (i.e. the parsing path through DefaultMimeXdsTransformer).
+        if (syntheticDefaults != null) {
+            for (DirectDocument2 document : documents) {
+                DirectDocument2.Metadata meta = document.getMetadata();
+                if (meta.getClassCode() == null) {
+                    String loinc = meta.getLoinc();
+                    meta.setClassCode(loinc != null ? loinc : syntheticDefaults.getClassCode(), true);
+                }
+                if (meta.getConfidentialityCode() == null) {
+                    meta.setConfidentialityCode(syntheticDefaults.getConfidentialityCode(), true);
+                }
+                if (meta.getHealthcareFacilityTypeCode() == null) {
+                    meta.setHealthcareFacilityTypeCode(syntheticDefaults.getHealthcareFacilityTypeCode(), true);
+                }
+                if (meta.getPracticeSettingCode() == null) {
+                    meta.setPracticeSettingCode(syntheticDefaults.getPracticeSettingCode(), true);
+                }
             }
         }
     }

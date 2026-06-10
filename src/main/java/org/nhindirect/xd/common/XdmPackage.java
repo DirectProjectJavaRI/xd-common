@@ -168,7 +168,7 @@ public class XdmPackage {
 
     }
 
-    public static XdmPackage fromXdmZipDataHandler(DataHandler dataHandler) throws Exception {
+    public static XdmPackage fromXdmZipDataHandler(DataHandler dataHandler, SyntheticMetadataDefaults syntheticDefaults) throws Exception {
         File file = null;
 
         try {
@@ -181,7 +181,7 @@ public class XdmPackage {
             throw new Exception("Error creating temporary work file, unable to complete transformation.", e);
         }
 
-        XdmPackage xdmPackage = fromXdmZipFile(file);
+        XdmPackage xdmPackage = fromXdmZipFile(file, syntheticDefaults);
 
         boolean delete = file.delete();
 
@@ -198,8 +198,8 @@ public class XdmPackage {
         return xdmPackage;
     }
 
-    public static XdmPackage fromXdmZipFile(File file) throws Exception {
-        DirectDocuments documents = new DirectDocuments();
+    public static XdmPackage fromXdmZipFile(File file, SyntheticMetadataDefaults syntheticDefaults) throws Exception {
+        DirectDocuments documents = new DirectDocuments(syntheticDefaults);
 
         ZipFile zipFile = new ZipFile(file, ZipFile.OPEN_READ);
 

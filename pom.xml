@@ -43,10 +43,15 @@
 	     <url>https://github.com/DirectProjectJavaRI/xd-common.git</url>  
 	     <connection>scm:hg:https://github.com/DirectProjectJavaRI/xd-common.git</connection>
 	</scm> 	 
-    <dependencies>    
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>             
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>	    
         <dependency>
             <groupId>org.nhind</groupId>

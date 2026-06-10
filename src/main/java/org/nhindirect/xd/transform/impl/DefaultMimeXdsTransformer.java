@@ -38,6 +38,7 @@ import jakarta.mail.internet.MimeMultipart;
 
 import org.nhindirect.xd.common.DirectDocument2;
 import org.nhindirect.xd.common.DirectDocuments;
+import org.nhindirect.xd.common.SyntheticMetadataDefaults;
 import org.nhindirect.xd.common.XdmPackage;
 import org.nhindirect.xd.common.type.DirectDocumentType;
 import org.nhindirect.xd.common.type.FormatCodeEnum;
@@ -53,11 +54,18 @@ import org.nhindirect.xd.transform.util.type.MimeType;
 @Slf4j
 public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
 
+    private final SyntheticMetadataDefaults syntheticDefaults;
+
     /**
-     * Construct a new DefaultMimeXdsTransformer object.
+     * Construct a new DefaultMimeXdsTransformer object with configurable synthetic metadata defaults.
+     * Obtain the defaults from Spring autoconfiguration via {@code XDMailAutoConfiguration}.
+     *
+     * @param syntheticDefaults
+     *            Default values applied when required XDS metadata fields are absent.
      */
-    public DefaultMimeXdsTransformer() {
+    public DefaultMimeXdsTransformer(SyntheticMetadataDefaults syntheticDefaults) {
         super();
+        this.syntheticDefaults = syntheticDefaults;
     }
 
     /*
@@ -68,7 +76,7 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
     @Override
     public ProvideAndRegisterDocumentSetRequestType transform(MimeMessage mimeMessage) throws TransformationException {
         ProvideAndRegisterDocumentSetRequestType request;
-        DirectDocuments documents = new DirectDocuments();
+        DirectDocuments documents = new DirectDocuments(syntheticDefaults);
         
         byte[] xdsDocument = null;
         String xdsMimeType = null;
@@ -127,7 +135,7 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
                      * Overwrite all documents with XDM content and then break
                      */
                     if (xdmBodyPart != null) {
-                        XdmPackage xdmPackage = XdmPackage.fromXdmZipDataHandler(xdmBodyPart.getDataHandler());
+                        XdmPackage xdmPackage = XdmPackage.fromXdmZipDataHandler(xdmBodyPart.getDataHandler(), syntheticDefaults);
 
                         // Spec says if XDM package is present, this will be the only attachment
                         // Overwrite all documents with XDM content and then break
@@ -290,7 +298,7 @@ public class DefaultMimeXdsTransformer implements MimeXdsTransformer {
         }
 
         // Additional metadata from document parsing
-        documentType.parse(new String(xdsDocument), metadata);
+        documentType.parse(new String(xdsDocument), metadata, syntheticDefaults);
 
         document.setData(xdsDocument);
 

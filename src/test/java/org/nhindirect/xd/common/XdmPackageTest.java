@@ -159,7 +159,7 @@ public class XdmPackageTest
         URL url = XdmPackageTest.class.getClassLoader().getResource("samplexdm.zip");
         File file = new File(url.getPath());
         
-        XdmPackage xdmPackage = XdmPackage.fromXdmZipFile(file);
+        XdmPackage xdmPackage = XdmPackage.fromXdmZipFile(file, new SyntheticMetadataDefaults());
 
         File f2 = xdmPackage.toFile();
         System.out.println(f2.getAbsolutePath());

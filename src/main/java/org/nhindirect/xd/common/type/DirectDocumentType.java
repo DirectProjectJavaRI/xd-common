@@ -47,6 +47,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.nhindirect.xd.common.DirectDocument2;
 import org.nhindirect.xd.common.DirectDocuments;
+import org.nhindirect.xd.common.SyntheticMetadataDefaults;
 import org.nhindirect.xd.transform.pojo.SimplePerson;
 import org.nhindirect.xd.transform.util.type.MimeType;
 import org.w3c.dom.Document;
@@ -99,7 +100,7 @@ public enum DirectDocumentType
         }
 
         @Override
-        public void parse(String data, DirectDocument2.Metadata metadata) throws Exception
+        public void parse(String data, DirectDocument2.Metadata metadata, SyntheticMetadataDefaults syntheticDefaults) throws Exception
         {
             Document doc = parseCdaXml(data);
             if (doc == null) return;
@@ -176,11 +177,10 @@ public enum DirectDocumentType
 
             metadata.setSourcePatient(person);
 
-            // healthcareFacilityTypeCode — not available in CDA, use a standard default
-            metadata.setHealthcareFacilityTypeCode("Outpatient", true);
-
-            // practiceSettingCode — not available in CDA, use a standard default
-            metadata.setPracticeSettingCode("General Medicine", true);
+            // healthcareFacilityTypeCode and practiceSettingCode are not available in CDA;
+            // use configurable synthetic defaults
+            metadata.setHealthcareFacilityTypeCode(syntheticDefaults.getHealthcareFacilityTypeCode(), true);
+            metadata.setPracticeSettingCode(syntheticDefaults.getPracticeSettingCode(), true);
         }
     },
     XDM(null, null)
@@ -295,7 +295,7 @@ public enum DirectDocumentType
     /**
      * Parse the document for additional metadata values. This method should be
      * overridden by parsable document types.
-     * 
+     *
      * @param data
      *            The document data.
      * @param metadata
@@ -305,6 +305,25 @@ public enum DirectDocumentType
     public void parse(String data, /* INOUT */DirectDocument2.Metadata metadata) throws Exception
     {
         return;
+    }
+
+    /**
+     * Parse the document for additional metadata values using the provided synthetic
+     * defaults for required fields not present in the document. Override this method
+     * rather than {@link #parse(String, DirectDocument2.Metadata)} when the document
+     * type needs configurable defaults.
+     *
+     * @param data
+     *            The document data.
+     * @param metadata
+     *            The metadata object to populate.
+     * @param syntheticDefaults
+     *            Configurable default values for required metadata fields.
+     * @throws Exception
+     */
+    public void parse(String data, /* INOUT */DirectDocument2.Metadata metadata, SyntheticMetadataDefaults syntheticDefaults) throws Exception
+    {
+        parse(data, metadata);
     }
 
     /**
