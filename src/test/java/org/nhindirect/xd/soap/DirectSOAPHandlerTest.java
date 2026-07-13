@@ -30,17 +30,25 @@ package org.nhindirect.xd.soap;
 
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
 
 /**
  * Test class for methods in DirectSOAPHandler.
@@ -115,6 +123,117 @@ public class DirectSOAPHandlerTest
             fail("Exception thrown during mock SOAPMessage creation/handling.");
             e.printStackTrace();
         }
+    }
+
+    @AfterEach
+    public void cleanUpThreadData()
+    {
+        SafeThreadData.clean(Thread.currentThread().threadId());
+    }
+
+    /**
+     * Builds a mocked outbound SOAPMessageContext wrapping the given message.
+     */
+    private SOAPMessageContext buildOutboundContext(SOAPMessage message)
+    {
+        SOAPMessageContext context = mock(SOAPMessageContext.class);
+        when(context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).thenReturn(Boolean.TRUE);
+        when(context.containsKey(DirectSOAPHandler.ENDPOINT_ADDRESS)).thenReturn(true);
+        when(context.getMessage()).thenReturn(message);
+        return context;
+    }
+
+    private void populateOutboundThreadData()
+    {
+        Long threadId = Thread.currentThread().threadId();
+        SafeThreadData threadData = SafeThreadData.GetThreadInstance(threadId);
+        threadData.setAction("urn:ihe:iti:2007:ProvideAndRegisterDocumentSet-b");
+        threadData.setMessageId("urn:uuid:test-message-id");
+        threadData.setTo("https://example.org/xdr");
+        threadData.setDirectFrom("sender@direct.example.org");
+        threadData.setDirectTo("recipient@direct.example.org");
+        threadData.save();
+    }
+
+    /**
+     * Verifies that handleMessage() writes the WS-Addressing and direct:addressBlock
+     * headers into the outbound message such that they actually show up when the
+     * message is serialized (writeTo()) after handleMessage() returns -- not just
+     * present on the live in-memory SOAPHeader object.
+     */
+    @Test
+    public void testHandleMessage_outbound_addsExpectedHeadersToSerializedMessage() throws Exception
+    {
+        DirectSOAPHandler handler = new DirectSOAPHandler();
+
+        MessageFactory mf = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
+        SOAPMessage message = mf.createMessage();
+        message.getSOAPBody().addChildElement(new QName("urn:test", "TestRequest")).setTextContent("test-body");
+
+        populateOutboundThreadData();
+
+        SOAPMessageContext context = buildOutboundContext(message);
+
+        assertTrue(handler.handleMessage(context));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        message.writeTo(baos);
+        String xml = baos.toString("utf-8");
+
+        assertTrue(xml.contains("urn:ihe:iti:2007:ProvideAndRegisterDocumentSet-b"), "Missing Action header value: " + xml);
+        assertTrue(xml.contains("urn:uuid:test-message-id"), "Missing MessageID header value: " + xml);
+        assertTrue(xml.contains("https://example.org/xdr"), "Missing To header value: " + xml);
+        assertTrue(xml.contains("addressBlock"), "Missing direct:addressBlock header: " + xml);
+        assertTrue(xml.contains("mailto:sender@direct.example.org"), "Missing direct:from value: " + xml);
+        assertTrue(xml.contains("mailto:recipient@direct.example.org"), "Missing direct:to value: " + xml);
+        assertTrue(xml.contains("minimal"), "Missing direct:metadata-level value: " + xml);
+
+        assertFalse(SafeThreadData.getThreadMapView().containsKey(Thread.currentThread().threadId()),
+                "SafeThreadData should be cleaned up for this thread after handleMessage() returns");
+    }
+
+    /**
+     * Regression test for a bug where headers added directly to the envelope's DOM
+     * (env.addHeader()/addHeaderElement()) were silently dropped from the serialized
+     * message. Root cause: SAAJ's MessageImpl only re-serializes into its cached byte
+     * buffer when saveChanges() is called, and saveChanges() is skipped whenever
+     * saveRequired() reports false. saveRequired() is driven by an internal dirty flag
+     * that is only flipped by attachment/property-setting methods -- never by direct
+     * envelope/header DOM mutations. In production, the JAX-WS runtime has already
+     * called saveChanges() once (or equivalent) before invoking this handler, so
+     * saveRequired() is already false by the time handleMessage() runs. This test
+     * reproduces that exact pre-saved state by calling saveChanges() once before
+     * invoking the handler, which a naive "if (saveRequired()) saveChanges();" guard
+     * would then skip, leaving the newly-added headers unserialized.
+     */
+    @Test
+    public void testHandleMessage_outbound_headersSurviveWhenMessageAlreadyMarkedSaved() throws Exception
+    {
+        DirectSOAPHandler handler = new DirectSOAPHandler();
+
+        MessageFactory mf = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
+        SOAPMessage message = mf.createMessage();
+        message.getSOAPBody().addChildElement(new QName("urn:test", "TestRequest")).setTextContent("test-body");
+
+        // Simulate the JAX-WS runtime already having saved/serialized the message
+        // once before handing it to the handler chain.
+        message.saveChanges();
+        assertFalse(message.saveRequired(),
+                "Test setup invalid: message should report no save required immediately after saveChanges()");
+
+        populateOutboundThreadData();
+
+        SOAPMessageContext context = buildOutboundContext(message);
+
+        assertTrue(handler.handleMessage(context));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        message.writeTo(baos);
+        String xml = baos.toString("utf-8");
+
+        assertTrue(xml.contains("urn:uuid:test-message-id"), "Missing MessageID header value: " + xml);
+        assertTrue(xml.contains("mailto:sender@direct.example.org"), "Missing direct:from value: " + xml);
+        assertTrue(xml.contains("mailto:recipient@direct.example.org"), "Missing direct:to value: " + xml);
     }
 
 }

@@ -32,7 +32,7 @@ public class XdmPackage {
     private static final String SUFFIX = ".xml";
     private static final int BUFFER = 2048;
     private static final String XDM_SUB_FOLDER = "IHE_XDM/SUBSET01";
-    private static final String XDM_METADATA_FILE = "METADATA.xml";
+    private static final String XDM_METADATA_FILE = "METADATA.XML";
 
     public XdmPackage() {
         this(UUID.randomUUID().toString());
@@ -64,23 +64,25 @@ public class XdmPackage {
 
             for (DirectDocument2 document : documents.getDocuments()) {
                 if (document.getData() != null) {
-                    String fileName = document.getMetadata().getId() ;
-                    fileName = fileName.replace("urn:uuid:", "");
-                    fileName = fileName + getSuffix(document.getMetadata().getMimeType());
-                  
-                    document.getMetadata().setURI(fileName);
-                    addEntry(zipOutputStream, document.getData(), XDM_SUB_FOLDER + fileName );
+                    String fileName = document.getMetadata().getURI();
+                    if (StringUtils.isBlank(fileName)) {
+                        fileName = document.getMetadata().getId();
+                        fileName = fileName.replace("urn:uuid:", "");
+                        fileName = fileName + getSuffix(document.getMetadata().getMimeType());
+                        document.getMetadata().setURI(fileName);
+                    }
+                    addEntry(zipOutputStream, document.getData(), XDM_SUB_FOLDER + "/" + fileName);
                 }
             }
 
-            addEntry(zipOutputStream, documents.getSubmitObjectsRequestAsString().getBytes(), XDM_SUB_FOLDER + XDM_METADATA_FILE);
+            addEntry(zipOutputStream, documents.getSubmitObjectsRequestAsString().getBytes(), XDM_SUB_FOLDER + "/" + XDM_METADATA_FILE);
 
             addEntry(zipOutputStream, getIndex().getBytes(), "INDEX.htm");
 
             addEntry(zipOutputStream, getReadme().getBytes(), "README.txt");
 
             if (SUFFIX.equals(".xml")) {
-                addEntry(zipOutputStream, getXsl().getBytes(), XDM_SUB_FOLDER + "CCD.xsl");
+                addEntry(zipOutputStream, getXsl().getBytes(), XDM_SUB_FOLDER + "/CCD.xsl");
             }
 
             zipOutputStream.close();
@@ -119,7 +121,7 @@ public class XdmPackage {
 
             for (DirectDocument2 document : documents.getDocuments()) {
                 if (document.getData() != null) {
-                    String file = XDM_SUB_FOLDER + document.getMetadata().getId() + getSuffix(document.getMetadata().getMimeType());
+                    String file = XDM_SUB_FOLDER + "/" + document.getMetadata().getURI();
                     data += "<li><a href=\"" + file + "\">" + file + "</a> - " + document.getMetadata().getDescription() + "</li>";
                 }
             }

@@ -121,13 +121,10 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
             if (outbound)
             {
                 log.info("Handling an outbound message");
-                
-                boolean isACK = !context.containsKey(ENDPOINT_ADDRESS);
-                
+
                 SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().threadId());
 
                 SOAPMessage msg = ((SOAPMessageContext) context).getMessage();
-                dumpSOAPMessage(msg);
                 SOAPPart sp = msg.getSOAPPart();
 
                 // edit Envelope
@@ -144,6 +141,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
                     if (threadData.getAction() != null)
                     {
+                        log.debug("Adding Action header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "Action");
                         SOAPHeaderElement saction = sh.addHeaderElement(qname);
                         boolean must = true;
@@ -153,12 +151,14 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     }
                     if (threadData.getRelatesTo() != null)
                     {
+                        log.debug("Adding RelatesTo header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "RelatesTo");
                         SOAPHeaderElement relates = sh.addHeaderElement(qname);
                         relates.setValue(threadData.getRelatesTo());
                     }
                     if (threadData.getFrom() != null)
                     {
+                        log.debug("Adding From header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "From");
                         QName child = new QName("http://www.w3.org/2005/08/addressing", "Address");
                         SOAPHeaderElement efrom = sh.addHeaderElement(qname);
@@ -167,12 +167,14 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     }
                     if (threadData.getMessageId() != null)
                     {
+                        log.debug("Adding MessageID header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "MessageID");
                         SOAPHeaderElement message = sh.addHeaderElement(qname);
                         message.setValue(threadData.getMessageId());
                     }
                     if (threadData.getTo() != null)
                     {
+                        log.debug("Adding To header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "To");
                         SOAPHeaderElement sto = sh.addHeaderElement(qname);
                         sto.setValue(threadData.getTo());
@@ -185,6 +187,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
                     if (StringUtils.isNotBlank(threadData.getDirectFrom()))
                     {
+                        log.debug("Adding direct:addressBlock/from header");
                         SOAPElement directFromElement = directHeader.addChildElement(new QName("urn:direct:addressing", "from"));
                         directFromElement.setPrefix("direct");
                         URI uri = new URI(threadData.getDirectFrom());
@@ -193,6 +196,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
                     if (StringUtils.isNotBlank(threadData.getDirectTo()))
                     {
+                        log.debug("Adding direct:addressBlock/to header");
                         /**
                          * consider multiple recipients
                          */
@@ -215,10 +219,30 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                         log.error("Failed to write SOAP Header: " + tb.getMessage());
                     }
                 }
-                if (isACK){
-                    SafeThreadData.clean(Thread.currentThread().threadId());
+
+                try
+                {
+                    // saveRequired() is not reliable here: the header elements above were
+                    // added directly to the envelope's DOM (env.addHeader()/addHeaderElement()),
+                    // which does not flip SAAJ's internal dirty flag. saveChanges() must be
+                    // called unconditionally so the cached message bytes get re-serialized
+                    // from the envelope; otherwise writeTo() re-emits a stale, pre-header copy.
+                    msg.saveChanges();
                 }
-                
+                catch (SOAPException se)
+                {
+                    log.warn("Unable to save SOAP message changes.", se);
+                }
+
+                dumpSOAPMessage(msg);
+
+                // Defensive cleanup: the header data has already been read out of
+                // SafeThreadData and written into the message above, so this thread's
+                // entry is no longer needed. Clean it here rather than relying on every
+                // caller to clean up after itself, since this is a static map keyed by
+                // a reused thread ID (see Issue 249 / XDR-MULTIPLE-RECIPIENT-ISSUE).
+                SafeThreadData.clean(Thread.currentThread().threadId());
+
             }
             else
             {
@@ -401,7 +425,6 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
             log.info("SOAP Message is null");
             return;
         }
-
 
         if (log.isDebugEnabled())
         {
