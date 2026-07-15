@@ -35,6 +35,7 @@ import static org.nhindirect.xd.common.DirectDocumentUtils.slotNotEmpty;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
@@ -241,7 +242,7 @@ public class DirectDocument2
             
             // File size and hash
             this.size = file.length();
-            this.hash = getSha1Hash(FileUtils.readFileToString(file));
+            this.hash = getSha1Hash(FileUtils.readFileToByteArray(file));
         }
 
         /**
@@ -1369,18 +1370,6 @@ public class DirectDocument2
      */
     public static String getSha1Hash(byte[] bytes)
     {
-        return getSha1Hash(new String(bytes));
-    }
-
-    /**
-     * Calculate the SHA-1 hash for the provided string.
-     * 
-     * @param string
-     *            The string from which to calculate the SHA-1 hash.
-     * @return the SHA-1 hash or null if unable to calculate.
-     */
-    public static String getSha1Hash(String string)
-    {
         MessageDigest messageDigest = null;
 
         try
@@ -1392,13 +1381,21 @@ public class DirectDocument2
             log.error("Unable to calculate hash, returning null.", e);
             return null;
         }
-        
-        messageDigest.update(string.getBytes(), 0, string.length());
-        byte[] sha1hash = messageDigest.digest();
-        char[]hex = Hex.encodeHex(sha1hash);
-        String newret = new String(hex);
-        //BigInteger bigInt = new BigInteger(sha1hash);
-        //return bigInt.toString(16);
-        return newret;
+
+        byte[] sha1hash = messageDigest.digest(bytes);
+        char[] hex = Hex.encodeHex(sha1hash);
+        return new String(hex);
+    }
+
+    /**
+     * Calculate the SHA-1 hash for the provided string.
+     *
+     * @param string
+     *            The string from which to calculate the SHA-1 hash.
+     * @return the SHA-1 hash or null if unable to calculate.
+     */
+    public static String getSha1Hash(String string)
+    {
+        return getSha1Hash(string.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -247,7 +247,7 @@ public class XdmPackage {
                     ByteArrayOutputStream byteArrayOutputStream = readData(zipFile, zipEntry);
 
                     // Try hash-based lookup first
-                    String digest = DirectDocument2.getSha1Hash(byteArrayOutputStream.toString());
+                    String digest = DirectDocument2.getSha1Hash(byteArrayOutputStream.toByteArray());
                     DirectDocument2 document = documents.getDocumentByHash(digest);
 
                     // Fall back to URI-based lookup using the filename portion of the zip entry

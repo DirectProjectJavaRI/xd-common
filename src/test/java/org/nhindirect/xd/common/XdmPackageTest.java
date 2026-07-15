@@ -28,6 +28,8 @@
 
 package org.nhindirect.xd.common;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -163,5 +165,36 @@ public class XdmPackageTest
 
         File f2 = xdmPackage.toFile();
         System.out.println(f2.getAbsolutePath());
+    }
+
+    /**
+     * Regression test for a bug where DirectDocument2.getSha1Hash() truncated its input before
+     * hashing, corrupting the hash slot for any document containing a multi-byte UTF-8
+     * character. samplexdm.zip's Document01.xml contains such a character (its raw byte length
+     * is 68226, but decodes to only 68224 UTF-16 chars), so parsing it end-to-end through
+     * XdmPackage exercises the exact path (XdmPackage -&gt; DirectDocuments.setValues() -&gt;
+     * DirectDocument2.setData() -&gt; getSha1Hash()) that produced the wrong hash reported by the
+     * XDS repository as "hash slot ... disagrees with computed value".
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testFromFileRecomputesHashMatchingDeclaredMetadata() throws Exception
+    {
+        URL url = XdmPackageTest.class.getClassLoader().getResource("samplexdm.zip");
+        File file = new File(url.getPath());
+
+        XdmPackage xdmPackage = XdmPackage.fromXdmZipFile(file, new SyntheticMetadataDefaults());
+        DirectDocuments documents = xdmPackage.getDocuments();
+
+        assertEquals(1, documents.getDocuments().size());
+
+        DirectDocument2 document = documents.getDocuments().get(0);
+
+        // The hash declared in METADATA.xml, which is the true SHA-1 of Document01.xml's bytes.
+        String declaredHash = "2f016bdeba83855ec76bd1102d9da6a79590f1a9";
+
+        assertEquals(declaredHash, document.getMetadata().getHash());
+        assertEquals(declaredHash, DirectDocument2.getSha1Hash(document.getData()));
     }
 }

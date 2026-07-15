@@ -362,6 +362,8 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     }
                 }
 
+                dumpSOAPMessage(msg);
+
                 threadData.save();
             }
         }
@@ -470,9 +472,8 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
         try
         {
-            @SuppressWarnings("unused")
             SOAPMessage msg = ((SOAPMessageContext) context).getMessage();
-            // dumpSOAPMessage(msg);
+            dumpSOAPMessage(msg);
 
             if (context.getMessage().getSOAPBody().getFault() != null)
             {
