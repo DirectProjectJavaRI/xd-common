@@ -28,8 +28,6 @@ public class XdmPackage {
 
     private String messageId;
     private DirectDocuments documents;
-    @Deprecated
-    private static final String SUFFIX = ".xml";
     private static final int BUFFER = 2048;
     private static final String XDM_SUB_FOLDER = "IHE_XDM/SUBSET01";
     private static final String XDM_METADATA_FILE = "METADATA.XML";
@@ -62,13 +60,22 @@ public class XdmPackage {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(dest));
             zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
 
+            // Explicit directory entries are required so that readers which look for the
+            // submission set folder as its own zip record (rather than inferring it from
+            // file paths) can find it, even though the folder is otherwise implied by the
+            // file entries added below.
+            addDirectoryEntry(zipOutputStream, "IHE_XDM/");
+            addDirectoryEntry(zipOutputStream, XDM_SUB_FOLDER + "/");
+
+            int docIndex = 0;
             for (DirectDocument2 document : documents.getDocuments()) {
                 if (document.getData() != null) {
                     String fileName = document.getMetadata().getURI();
                     if (StringUtils.isBlank(fileName)) {
-                        fileName = document.getMetadata().getId();
-                        fileName = fileName.replace("urn:uuid:", "");
-                        fileName = fileName + getSuffix(document.getMetadata().getMimeType());
+                        docIndex++;
+                        // IHE XDM requires 8.3-style names (upper case, digits, or '_', max 8
+                        // chars before the extension) for entries under IHE_XDM/SUBSET01
+                        fileName = String.format("DOC%05d", docIndex) + getSuffix(document.getMetadata().getMimeType());
                         document.getMetadata().setURI(fileName);
                     }
                     addEntry(zipOutputStream, document.getData(), XDM_SUB_FOLDER + "/" + fileName);
@@ -77,13 +84,9 @@ public class XdmPackage {
 
             addEntry(zipOutputStream, documents.getSubmitObjectsRequestAsString().getBytes(), XDM_SUB_FOLDER + "/" + XDM_METADATA_FILE);
 
-            addEntry(zipOutputStream, getIndex().getBytes(), "INDEX.htm");
+            addEntry(zipOutputStream, getIndex().getBytes(), "INDEX.HTM");
 
-            addEntry(zipOutputStream, getReadme().getBytes(), "README.txt");
-
-            if (SUFFIX.equals(".xml")) {
-                addEntry(zipOutputStream, getXsl().getBytes(), XDM_SUB_FOLDER + "/CCD.xsl");
-            }
+            addEntry(zipOutputStream, getReadme().getBytes(), "README.TXT");
 
             zipOutputStream.close();
         } catch (Exception e) {
@@ -91,6 +94,12 @@ public class XdmPackage {
         }
 
         return xdmFile;
+    }
+
+    private void addDirectoryEntry(ZipOutputStream zipOutputStream, String dirName) throws IOException {
+        ZipEntry dirEntry = new ZipEntry(dirName);
+        zipOutputStream.putNextEntry(dirEntry);
+        zipOutputStream.closeEntry();
     }
 
     private void addEntry(ZipOutputStream zipOutputStream, byte[] data, String fileName) throws IOException {
@@ -153,22 +162,6 @@ public class XdmPackage {
         return new String(bytes);
     }
 
-    /*
-     * Get the xsl file.
-     */
-    public String getXsl() throws Exception {
-        byte[] bytes;
-
-        try {
-            bytes = readFile("CCD.xsl");
-        } catch (Exception e) {
-            log.error("Unable to access xsl file.", e);
-            throw e;
-        }
-
-        return new String(bytes);
-
-    }
 
     public static XdmPackage fromXdmZipDataHandler(DataHandler dataHandler, SyntheticMetadataDefaults syntheticDefaults) throws Exception {
         File file = null;
@@ -441,6 +434,6 @@ public class XdmPackage {
     }
 
     private String getSuffix(String mimeType) {
-        return "." + MimeType.lookup(mimeType).getSuffix();
+        return "." + MimeType.lookup(mimeType).getSuffix().toUpperCase();
     }
 }

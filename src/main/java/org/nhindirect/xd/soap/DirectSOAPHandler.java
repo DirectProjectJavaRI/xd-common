@@ -280,19 +280,19 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     try{
                         Node header = it.next();
 
-                        if (StringUtils.contains(header.toString(), "MessageID"))
+                        if (StringUtils.contains(header.getNodeName(), "MessageID"))
                             {
                                 threadData.setMessageId(header.getTextContent());
                             }
-                            else if (StringUtils.contains(header.toString(), "Action"))
+                            else if (StringUtils.contains(header.getNodeName(), "Action"))
                             {
                                 threadData.setAction(header.getTextContent());
                             }
-                            else if (StringUtils.contains(header.toString(), "RelatesTo"))
+                            else if (StringUtils.contains(header.getNodeName(), "RelatesTo"))
                             {
                                 threadData.setRelatesTo(header.getTextContent());
                             }
-                            else if (StringUtils.contains(header.toString(), "ReplyTo"))
+                            else if (StringUtils.contains(header.getNodeName(), "ReplyTo"))
                             {
                                 NodeList reps = header.getChildNodes();
                                 for (int i = 0; i < reps.getLength(); i++)
@@ -304,7 +304,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                                     }
                                 }
                             }
-                        else if (StringUtils.contains(header.toString(), "From"))
+                        else if (StringUtils.contains(header.getNodeName(), "From"))
                         {
                             NodeList reps = header.getChildNodes();
                             for (int i = 0; i < reps.getLength(); i++)
@@ -316,11 +316,11 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                                 }
                             }
                         }
-                        else if (StringUtils.contains(header.toString(), "To")) // must be after ReplyTo
+                        else if (StringUtils.contains(header.getNodeName(), "To")) // must be after ReplyTo
                             {
                                 threadData.setTo(header.getTextContent());
                             }
-                        else if (StringUtils.contains(header.toString(), "addressBlock"))
+                        else if (StringUtils.contains(header.getNodeName(), "addressBlock"))
                         {
                             NodeList childNodes = header.getChildNodes();
 
