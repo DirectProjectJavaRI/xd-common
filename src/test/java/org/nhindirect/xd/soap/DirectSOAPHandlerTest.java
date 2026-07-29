@@ -40,11 +40,13 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
 import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.MimeHeaders;
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.ws.handler.MessageContext;
@@ -234,6 +236,77 @@ public class DirectSOAPHandlerTest
         assertTrue(xml.contains("urn:uuid:test-message-id"), "Missing MessageID header value: " + xml);
         assertTrue(xml.contains("mailto:sender@direct.example.org"), "Missing direct:from value: " + xml);
         assertTrue(xml.contains("mailto:recipient@direct.example.org"), "Missing direct:to value: " + xml);
+    }
+
+    /**
+     * Verifies that an inbound direct:addressBlock/X-DIRECT-FINAL-DESTINATION-DELIVERY element
+     * is parsed into SafeThreadData, so it can later be threaded through to the outbound SMTP
+     * Disposition-Notification-* headers.
+     */
+    @Test
+    public void testHandleMessage_inbound_parsesFinalDestinationDeliveryFromAddressBlock() throws Exception
+    {
+        String requestXml =
+                "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\">"
+              + "  <soap:Header>"
+              + "    <direct:addressBlock xmlns:direct=\"urn:direct:addressing\">"
+              + "      <direct:from>outgoing_from@ett-domain.example.org</direct:from>"
+              + "      <direct:to>direct_to@sut-domain.example.org</direct:to>"
+              + "      <direct:X-DIRECT-FINAL-DESTINATION-DELIVERY>true</direct:X-DIRECT-FINAL-DESTINATION-DELIVERY>"
+              + "    </direct:addressBlock>"
+              + "  </soap:Header>"
+              + "  <soap:Body>"
+              + "    <xdsb:ProvideAndRegisterDocumentSetRequest xmlns:xdsb=\"urn:ihe:iti:xds-b:2007\"/>"
+              + "  </soap:Body>"
+              + "</soap:Envelope>";
+
+        MimeHeaders mimeHeaders = new MimeHeaders();
+        mimeHeaders.addHeader("Content-Type", "application/soap+xml");
+        MessageFactory mf = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
+        SOAPMessage message = mf.createMessage(mimeHeaders,
+                new ByteArrayInputStream(requestXml.getBytes("utf-8")));
+
+        SOAPMessageContext context = mock(SOAPMessageContext.class);
+        when(context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).thenReturn(Boolean.FALSE);
+        when(context.getMessage()).thenReturn(message);
+
+        assertTrue(new DirectSOAPHandler().handleMessage(context));
+
+        SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().threadId());
+        assertEquals("outgoing_from@ett-domain.example.org", threadData.getDirectFrom());
+        assertEquals("direct_to@sut-domain.example.org", threadData.getDirectTo());
+        assertEquals("true", threadData.getFinalDestinationDelivery());
+    }
+
+    /**
+     * Verifies that when SafeThreadData carries a finalDestinationDelivery flag, handleMessage()
+     * mirrors it back out as a direct:addressBlock/X-DIRECT-FINAL-DESTINATION-DELIVERY element on
+     * an outbound (forwarded) SOAP message.
+     */
+    @Test
+    public void testHandleMessage_outbound_mirrorsFinalDestinationDeliveryIntoAddressBlock() throws Exception
+    {
+        DirectSOAPHandler handler = new DirectSOAPHandler();
+
+        MessageFactory mf = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
+        SOAPMessage message = mf.createMessage();
+        message.getSOAPBody().addChildElement(new QName("urn:test", "TestRequest")).setTextContent("test-body");
+
+        populateOutboundThreadData();
+        SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().threadId());
+        threadData.setFinalDestinationDelivery("true");
+        threadData.save();
+
+        SOAPMessageContext context = buildOutboundContext(message);
+
+        assertTrue(handler.handleMessage(context));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        message.writeTo(baos);
+        String xml = baos.toString("utf-8");
+
+        assertTrue(xml.contains("X-DIRECT-FINAL-DESTINATION-DELIVERY"),
+                "Missing direct:X-DIRECT-FINAL-DESTINATION-DELIVERY element: " + xml);
     }
 
 }

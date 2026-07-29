@@ -209,6 +209,23 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                         }
                     }
 
+                    if (StringUtils.isNotBlank(threadData.getNotificationRelatesTo()))
+                    {
+                        log.debug("Adding direct:addressBlock/notification header");
+                        SOAPElement directNotificationElement = directHeader.addChildElement(new QName("urn:direct:addressing", "notification"));
+                        directNotificationElement.setPrefix("direct");
+                        directNotificationElement.addAttribute(new QName("relatesTo"), threadData.getNotificationRelatesTo());
+                    }
+
+                    if (StringUtils.isNotBlank(threadData.getFinalDestinationDelivery()))
+                    {
+                        log.debug("Adding direct:addressBlock/X-DIRECT-FINAL-DESTINATION-DELIVERY header");
+                        SOAPElement directFinalDestinationDeliveryElement = directHeader.addChildElement(
+                                new QName("urn:direct:addressing", "X-DIRECT-FINAL-DESTINATION-DELIVERY"));
+                        directFinalDestinationDeliveryElement.setPrefix("direct");
+                        directFinalDestinationDeliveryElement.setValue(threadData.getFinalDestinationDelivery());
+                    }
+
                     SOAPElement directMetadataLevelElement = directHeader.addChildElement(new QName("urn:direct:addressing", "metadata-level"));
                     directMetadataLevelElement.setPrefix("direct");
                     directMetadataLevelElement.setValue(MetadataLevelEnum.MINIMAL.getLevel());
@@ -328,7 +345,11 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                             {
                                 Node node = childNodes.item(i);
 
-                                if (StringUtils.contains(node.getNodeName(), "from"))
+                                if (StringUtils.contains(node.getNodeName(), "X-DIRECT-FINAL-DESTINATION-DELIVERY"))
+                                {
+                                    threadData.setFinalDestinationDelivery(node.getTextContent());
+                                }
+                                else if (StringUtils.contains(node.getNodeName(), "from"))
                                 {
                                     threadData.setDirectFrom(node.getTextContent());
                                 }

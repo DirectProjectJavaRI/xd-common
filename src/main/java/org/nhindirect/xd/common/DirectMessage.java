@@ -43,6 +43,7 @@ public class DirectMessage
     private DirectDocuments directDocuments;
     private String body;
     private String subject;
+    private boolean finalDestinationDeliveryRequested;
 
 
     /**
@@ -179,6 +180,25 @@ public class DirectMessage
     public void setDirectDocuments(DirectDocuments directDocuments)
     {
         this.directDocuments = directDocuments;
+    }
+
+    /**
+     * @return whether the sender requested Direct's Reliable and Timely delivery notification
+     *         (X-DIRECT-FINAL-DESTINATION-DELIVERY) for this message.
+     */
+    public boolean isFinalDestinationDeliveryRequested()
+    {
+        return finalDestinationDeliveryRequested;
+    }
+
+    /**
+     * @param finalDestinationDeliveryRequested
+     *            whether the sender requested Direct's Reliable and Timely delivery notification
+     *            (X-DIRECT-FINAL-DESTINATION-DELIVERY) for this message.
+     */
+    public void setFinalDestinationDeliveryRequested(boolean finalDestinationDeliveryRequested)
+    {
+        this.finalDestinationDeliveryRequested = finalDestinationDeliveryRequested;
     }
 
 }
