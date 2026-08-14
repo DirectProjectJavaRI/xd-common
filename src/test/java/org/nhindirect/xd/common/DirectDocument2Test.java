@@ -29,9 +29,12 @@
 package org.nhindirect.xd.common;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +42,7 @@ import java.util.UUID;
 
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.ExtrinsicObjectType;
 
+import org.apache.commons.codec.binary.Hex;
 import org.nhindirect.xd.transform.pojo.SimplePerson;
 
 import lombok.extern.slf4j.Slf4j;
@@ -734,7 +738,97 @@ public class DirectDocument2Test
 
         assertEquals(value, metadata.getHash());
     }
-    
+
+    /**
+     * getSha1Hash(byte[]) must match known SHA-1 test vectors.
+     */
+    @Test
+    public void testSha1HashKnownVectors() throws Exception
+    {
+        assertEquals("da39a3ee5e6b4b0d3255bfef95601890afd80709",
+                DirectDocument2.getSha1Hash(new byte[0]));
+
+        assertEquals("a9993e364706816aba3e25717850c26c9cd0d89d",
+                DirectDocument2.getSha1Hash("abc".getBytes(StandardCharsets.US_ASCII)));
+    }
+
+    /**
+     * Regression test for a bug where getSha1Hash(byte[]) converted the bytes to a String and
+     * back before hashing, and used the String's character count (rather than its byte count)
+     * as the number of bytes to digest. Any content containing a multi-byte UTF-8 character
+     * (character count &lt; byte count) was silently truncated before hashing, producing a hash
+     * that did not match the actual document bytes and failed XDS repository hash validation.
+     */
+    @Test
+    public void testSha1HashDoesNotTruncateMultibyteUtf8Content() throws Exception
+    {
+        // "café – résumé" contains 2-byte and 3-byte UTF-8 sequences, so its
+        // byte length is greater than its character length.
+        byte[] data = "café – résumé, repeated many times to pad the buffer well past a single hash block ".repeat(50)
+                .getBytes(StandardCharsets.UTF_8);
+
+        String expected = referenceSha1(data);
+
+        assertEquals(expected, DirectDocument2.getSha1Hash(data));
+        assertEquals(expected, DirectDocument2.getSha1Hash(new String(data, StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * DirectDocument2.setData(byte[]) computes the document's hash slot from the exact bytes
+     * provided; it must not silently drop or alter bytes for non-ASCII content.
+     */
+    @Test
+    public void testSetDataComputesHashOverFullByteContent() throws Exception
+    {
+        byte[] data = "––– non-ascii payload –––".getBytes(StandardCharsets.UTF_8);
+
+        DirectDocument2 document = new DirectDocument2();
+        document.setData(data);
+
+        assertEquals(referenceSha1(data), document.getMetadata().getHash());
+        assertEquals(Long.valueOf(data.length), document.getMetadata().getSize());
+    }
+
+    /**
+     * Guards against regressing back to the old (broken) truncating implementation: for content
+     * with a byte/character length mismatch, the truncated-digest value must differ from the
+     * correct one, so this test would fail if the bug were reintroduced.
+     */
+    @Test
+    public void testSha1HashDiffersFromOldTruncatedImplementation() throws Exception
+    {
+        byte[] data = "––– non-ascii payload –––".getBytes(StandardCharsets.UTF_8);
+        String correct = referenceSha1(data);
+
+        String oldBuggyValue = oldTruncatingSha1Hash(data);
+
+        assertNotEquals(oldBuggyValue, correct);
+        assertEquals(correct, DirectDocument2.getSha1Hash(data));
+    }
+
+    /**
+     * Computes a straightforward, independently-implemented SHA-1 hex digest of the full byte
+     * array, used as the expected value in the hash regression tests above.
+     */
+    private static String referenceSha1(byte[] data) throws Exception
+    {
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+        return new String(Hex.encodeHex(messageDigest.digest(data)));
+    }
+
+    /**
+     * Reproduces the pre-fix behavior of DirectDocument2.getSha1Hash(byte[]): round-trip the
+     * bytes through a String using the platform default charset, then digest only
+     * string.length() bytes instead of the full re-encoded byte array.
+     */
+    private static String oldTruncatingSha1Hash(byte[] bytes) throws Exception
+    {
+        String string = new String(bytes);
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+        messageDigest.update(string.getBytes(), 0, string.length());
+        return new String(Hex.encodeHex(messageDigest.digest()));
+    }
+
     @Test
     public void testURI() throws Exception
     {

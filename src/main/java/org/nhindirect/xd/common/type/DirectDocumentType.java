@@ -31,15 +31,27 @@ package org.nhindirect.xd.common.type;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.util.Date;
 
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.nhindirect.xd.common.DirectDocument2;
 import org.nhindirect.xd.common.DirectDocuments;
+import org.nhindirect.xd.common.SyntheticMetadataDefaults;
+import org.nhindirect.xd.transform.pojo.SimplePerson;
 import org.nhindirect.xd.transform.util.type.MimeType;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 /**
  * Enumeration of document types. Order of enumerations is important, and should
@@ -63,49 +75,112 @@ public enum DirectDocumentType
             return StringUtils.contains(data, "POCD_HD000040");
         }
         
-        /* 
-         * (non-Javadoc)
-         * 
-         * @see org.nhindirect.xd.common.type.DirectDocumentType#parse(java.lang.String, org.nhindirect.xd.common.DirectDocuments.SubmissionSet)
-         */
         @Override
-        public void parse(String data, /* INOUT */DirectDocuments.SubmissionSet submissionSet) throws Exception
+        public void parse(String data, DirectDocuments.SubmissionSet submissionSet) throws Exception
         {
-            // Parse CCD for patient info
-            
-            // (R) XDS
-            // --
-            
-            // (R2) XDS
-            // --
-            
-            // (O) XDS
-            // --
-        }
-        
-        /* 
-         * (non-Javadoc)
-         * 
-         * @see org.nhindirect.xd.common.type.DirectDocumentType#parse(java.lang.String, org.nhindirect.xd.common.DirectDocument2.Metadata)
-         */
-        @Override
-        public void parse(String data, /* INOUT */DirectDocument2.Metadata metadata) throws Exception
-        {
-            // Parse CCD for patient info
+            Document doc = parseCdaXml(data);
+            if (doc == null) return;
 
-            // (R) XDS Source
-            // TODO: Can we get any of the below values from the CCD? And does the presence of a CCD mean XDS source?
-            // TODO: classCode
-            // TODO: confidentialityCode
-            // TODO: creationTime
-            // TODO: formatCode
-            // TODO: healthcareFacilityTypeCode
-            // TODO: languageCode
-            // TODO: practiceSettingCode
-            // TODO: typeCode
-            
-            // (R2) XDS Source
-            // TODO: author (We should be able to get this out of the CCD)
+            XPath xp = XPathFactory.newInstance().newXPath();
+
+            // patientId: extension^^^&root&ISO from first <id> under <patientRole>
+            String ext  = xp.evaluate("//*[local-name()='recordTarget']/*[local-name()='patientRole']/*[local-name()='id'][1]/@extension", doc);
+            String root = xp.evaluate("//*[local-name()='recordTarget']/*[local-name()='patientRole']/*[local-name()='id'][1]/@root", doc);
+            if (!root.isEmpty()) {
+                submissionSet.setPatientId(ext + "^^^&" + root + "&ISO");
+            }
+
+            // contentTypeCode from the ClinicalDocument/code element
+            String code    = xp.evaluate("//*[local-name()='ClinicalDocument']/*[local-name()='code']/@code", doc);
+            String display = xp.evaluate("//*[local-name()='ClinicalDocument']/*[local-name()='code']/@displayName", doc);
+            if (!code.isEmpty()) {
+                submissionSet.setContentTypeCode(code);
+                submissionSet.setContentTypeCode_localized(display.isEmpty() ? code : display);
+            }
+        }
+
+        @Override
+        public void parse(String data, DirectDocument2.Metadata metadata, SyntheticMetadataDefaults syntheticDefaults) throws Exception
+        {
+            Document doc = parseCdaXml(data);
+            if (doc == null) return;
+
+            XPath xp = XPathFactory.newInstance().newXPath();
+
+            // creationTime from <effectiveTime value="..."/>
+            String effectiveTime = xp.evaluate("//*[local-name()='ClinicalDocument']/*[local-name()='effectiveTime']/@value", doc);
+            if (!effectiveTime.isEmpty()) {
+                try {
+                    Date d = DateUtils.parseDate(effectiveTime.substring(0, Math.min(effectiveTime.length(), 14)),
+                            new String[]{"yyyyMMddHHmmss", "yyyyMMddHHmm", "yyyyMMdd"});
+                    metadata.setCreationTime(d);
+                } catch (Exception ignored) {}
+            }
+
+            // languageCode from <languageCode code="en-US"/>
+            String lang = xp.evaluate("//*[local-name()='ClinicalDocument']/*[local-name()='languageCode']/@code", doc);
+            if (!lang.isEmpty()) {
+                metadata.setLanguageCode(lang);
+            }
+
+            // confidentialityCode from <confidentialityCode code="N" .../>
+            String confCode = xp.evaluate("//*[local-name()='ClinicalDocument']/*[local-name()='confidentialityCode']/@code", doc);
+            if (!confCode.isEmpty()) {
+                metadata.setConfidentialityCode(confCode, true);
+            }
+
+            // classCode and typeCode (loinc) from <code code="..." displayName="..."/>
+            String classCode    = xp.evaluate("//*[local-name()='ClinicalDocument']/*[local-name()='code']/@code", doc);
+            String classDisplay = xp.evaluate("//*[local-name()='ClinicalDocument']/*[local-name()='code']/@displayName", doc);
+            if (!classCode.isEmpty()) {
+                metadata.setClassCode(classCode, true);
+                if (!classDisplay.isEmpty()) {
+                    metadata.setClassCode_localized(classDisplay);
+                }
+                metadata.setLoinc(classCode, true);
+                if (!classDisplay.isEmpty()) {
+                    metadata.setLoinc_localized(classDisplay);
+                }
+            }
+
+            // patientId: extension^^^&root&ISO
+            String patExt  = xp.evaluate("//*[local-name()='recordTarget']/*[local-name()='patientRole']/*[local-name()='id'][1]/@extension", doc);
+            String patRoot = xp.evaluate("//*[local-name()='recordTarget']/*[local-name()='patientRole']/*[local-name()='id'][1]/@root", doc);
+            if (!patRoot.isEmpty()) {
+                metadata.setPatientId(patExt + "^^^&" + patRoot + "&ISO");
+            }
+
+            // sourcePatient demographics from <patientRole>/<patient>
+            SimplePerson person = new SimplePerson();
+            person.setLocalId(patExt.isEmpty() ? null : patExt);
+            person.setLocalOrg(patRoot.isEmpty() ? null : patRoot);
+
+            String given  = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='patient']/*[local-name()='name']/*[local-name()='given'][1]/text()", doc);
+            String family = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='patient']/*[local-name()='name']/*[local-name()='family']/text()", doc);
+            String bday   = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='patient']/*[local-name()='birthTime']/@value", doc);
+            String gender = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='patient']/*[local-name()='administrativeGenderCode']/@code", doc);
+            person.setFirstName(given.isEmpty()  ? null : given);
+            person.setLastName(family.isEmpty()  ? null : family);
+            person.setBirthDateTime(bday.isEmpty() ? null : bday);
+            person.setGenderCode(gender.isEmpty() ? null : gender);
+
+            String street  = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='addr']/*[local-name()='streetAddressLine']/text()", doc);
+            String city    = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='addr']/*[local-name()='city']/text()", doc);
+            String state   = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='addr']/*[local-name()='state']/text()", doc);
+            String zip     = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='addr']/*[local-name()='postalCode']/text()", doc);
+            String country = xp.evaluate("//*[local-name()='patientRole']/*[local-name()='addr']/*[local-name()='country']/text()", doc);
+            person.setStreetAddress1(street.isEmpty()  ? null : street);
+            person.setCity(city.isEmpty()    ? null : city);
+            person.setState(state.isEmpty()  ? null : state);
+            person.setZipCode(zip.isEmpty()  ? null : zip);
+            person.setCountry(country.isEmpty() ? null : country);
+
+            metadata.setSourcePatient(person);
+
+            // healthcareFacilityTypeCode and practiceSettingCode are not available in CDA;
+            // use configurable synthetic defaults
+            metadata.setHealthcareFacilityTypeCode(syntheticDefaults.getHealthcareFacilityTypeCode(), true);
+            metadata.setPracticeSettingCode(syntheticDefaults.getPracticeSettingCode(), true);
         }
     },
     XDM(null, null)
@@ -119,7 +194,7 @@ public enum DirectDocumentType
         public boolean matches(String data, String contentType, String fileName)
         {
             // FIXME: Bad assumption
-            return StringUtils.contains(fileName, ".zip");
+            return StringUtils.containsIgnoreCase(fileName, ".zip");
         }  
     },
     PDF(null, MimeType.APPLICATION_PDF),
@@ -220,7 +295,7 @@ public enum DirectDocumentType
     /**
      * Parse the document for additional metadata values. This method should be
      * overridden by parsable document types.
-     * 
+     *
      * @param data
      *            The document data.
      * @param metadata
@@ -230,6 +305,25 @@ public enum DirectDocumentType
     public void parse(String data, /* INOUT */DirectDocument2.Metadata metadata) throws Exception
     {
         return;
+    }
+
+    /**
+     * Parse the document for additional metadata values using the provided synthetic
+     * defaults for required fields not present in the document. Override this method
+     * rather than {@link #parse(String, DirectDocument2.Metadata)} when the document
+     * type needs configurable defaults.
+     *
+     * @param data
+     *            The document data.
+     * @param metadata
+     *            The metadata object to populate.
+     * @param syntheticDefaults
+     *            Configurable default values for required metadata fields.
+     * @throws Exception
+     */
+    public void parse(String data, /* INOUT */DirectDocument2.Metadata metadata, SyntheticMetadataDefaults syntheticDefaults) throws Exception
+    {
+        parse(data, metadata);
     }
 
     /**
@@ -309,5 +403,18 @@ public enum DirectDocumentType
         inputStream.close();
 
         return new String(outputStream.toByteArray());
+    }
+
+    private static Document parseCdaXml(String data)
+    {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(false);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            return builder.parse(new InputSource(new StringReader(data)));
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

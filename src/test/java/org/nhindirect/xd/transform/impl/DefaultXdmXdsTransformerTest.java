@@ -41,8 +41,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-import javax.activation.DataHandler;
-import javax.xml.bind.JAXBElement;
+import jakarta.activation.DataHandler;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import oasis.names.tc.ebxml_regrep.xsd.lcm._3.SubmitObjectsRequest;

@@ -41,11 +41,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.util.ByteArrayDataSource;
-import javax.xml.bind.JAXBElement;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.util.ByteArrayDataSource;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import oasis.names.tc.ebxml_regrep.xsd.lcm._3.SubmitObjectsRequest;
@@ -78,11 +79,19 @@ import org.nhindirect.xd.transform.util.XmlUtils;
 public class DirectDocuments {
 
     private List<DirectDocument2> documents;
-    private SubmissionSet submissionSet;	
+    private SubmissionSet submissionSet;
+    private final SyntheticMetadataDefaults syntheticDefaults;
 
     public DirectDocuments() {
         this.documents = new ArrayList<DirectDocument2>();
         this.submissionSet = new SubmissionSet();
+        this.syntheticDefaults = null;
+    }
+
+    public DirectDocuments(SyntheticMetadataDefaults syntheticDefaults) {
+        this.documents = new ArrayList<DirectDocument2>();
+        this.submissionSet = new SubmissionSet();
+        this.syntheticDefaults = syntheticDefaults;
     }
 
     /**
@@ -210,9 +219,53 @@ public class DirectDocuments {
                 for (SlotType1 slot : at.getSlot()) {
                     if (SlotType1Enum.SUBMISSION_SET_STATUS.matches(slot.getName())) {
                         if (slotNotEmpty(slot)) {
-                            getDocumentById(at.getTargetObject()).getMetadata().setSubmissionSetStatus(slot.getName());
+                            getDocumentById(at.getTargetObject()).getMetadata().setSubmissionSetStatus(slot.getValueList().getValue().get(0));
                         }
                     }
+                }
+            }
+        }
+
+        // If the XDM SubmissionSet has no contentTypeCode (common in limited-metadata packages),
+        // derive one from the document's classCode, LOINC type code, or format code so the XDR
+        // validator is satisfied. XDM limited metadata typically lacks classCode, so fall back
+        // through available codes in order of preference.
+        if (submissionSet.getContentTypeCode() == null && !documents.isEmpty()) {
+            DirectDocument2.Metadata docMeta = documents.get(0).getMetadata();
+            String code = docMeta.getClassCode();
+            String codeLocalized = docMeta.getClassCode_localized();
+            if (code == null) {
+                code = docMeta.getLoinc();
+                codeLocalized = docMeta.getLoinc_localized();
+            }
+            if (code == null) {
+                code = docMeta.getFormatCode();
+                codeLocalized = docMeta.getFormatCode_localized();
+            }
+            if (code != null) {
+                submissionSet.setContentTypeCode(code);
+                submissionSet.setContentTypeCode_localized(codeLocalized != null ? codeLocalized : code);
+            }
+        }
+
+        // Apply synthetic defaults for metadata fields required by XDS validators but absent
+        // from XDM limited-metadata packages. Only runs when a configured SyntheticMetadataDefaults
+        // is present (i.e. the parsing path through DefaultMimeXdsTransformer).
+        if (syntheticDefaults != null) {
+            for (DirectDocument2 document : documents) {
+                DirectDocument2.Metadata meta = document.getMetadata();
+                if (meta.getClassCode() == null) {
+                    String loinc = meta.getLoinc();
+                    meta.setClassCode(loinc != null ? loinc : syntheticDefaults.getClassCode(), true);
+                }
+                if (meta.getConfidentialityCode() == null) {
+                    meta.setConfidentialityCode(syntheticDefaults.getConfidentialityCode(), true);
+                }
+                if (meta.getHealthcareFacilityTypeCode() == null) {
+                    meta.setHealthcareFacilityTypeCode(syntheticDefaults.getHealthcareFacilityTypeCode(), true);
+                }
+                if (meta.getPracticeSettingCode() == null) {
+                    meta.setPracticeSettingCode(syntheticDefaults.getPracticeSettingCode(), true);
                 }
             }
         }
@@ -346,7 +399,7 @@ public class DirectDocuments {
             ClassificationType authorClassification = new ClassificationType();
             authorClassification.setClassifiedObject(id);
             authorClassification.setNodeRepresentation(""); // required empty string
-            authorClassification.setId(ClassificationTypeEnum.SS_AUTHOR.getClassificationId());
+            authorClassification.setId(UUID.randomUUID().toString());
             authorClassification.setClassificationScheme(ClassificationTypeEnum.SS_AUTHOR.getClassificationScheme());
 
             List<SlotType1> authorClassificationSlots = authorClassification.getSlot();
@@ -358,24 +411,26 @@ public class DirectDocuments {
 
             rpt.getClassification().add(authorClassification);
 
-            // contentTypeCode
-            ClassificationType contentTypeCodeClassification = new ClassificationType();
-            contentTypeCodeClassification.setClassifiedObject(id);
-            contentTypeCodeClassification.setNodeRepresentation(contentTypeCode);
-            contentTypeCodeClassification.setName(makeInternationalStringType(contentTypeCode_localized));
-            contentTypeCodeClassification.setId(ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getClassificationId());
-            contentTypeCodeClassification.setClassificationScheme(ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getClassificationScheme());
+            // contentTypeCode — omit when code is not known
+            if (contentTypeCode != null) {
+                ClassificationType contentTypeCodeClassification = new ClassificationType();
+                contentTypeCodeClassification.setClassifiedObject(id);
+                contentTypeCodeClassification.setNodeRepresentation(contentTypeCode);
+                contentTypeCodeClassification.setName(makeInternationalStringType(contentTypeCode_localized));
+                contentTypeCodeClassification.setId(UUID.randomUUID().toString());
+                contentTypeCodeClassification.setClassificationScheme(ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getClassificationScheme());
 
-            List<SlotType1> contentTypeCodeClassificationSlots = contentTypeCodeClassification.getSlot();
-            addSlot(contentTypeCodeClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME, ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getCodingScheme()));
+                List<SlotType1> contentTypeCodeClassificationSlots = contentTypeCodeClassification.getSlot();
+                addSlot(contentTypeCodeClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME, ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getCodingScheme()));
 
-            rpt.getClassification().add(contentTypeCodeClassification);
+                rpt.getClassification().add(contentTypeCodeClassification);
+            }
 
             // uniqueId
             ExternalIdentifierType xdsSubmissionSet_uniqueId = new ExternalIdentifierType();
             xdsSubmissionSet_uniqueId.setValue(uniqueId);
             xdsSubmissionSet_uniqueId.setRegistryObject(id);
-            xdsSubmissionSet_uniqueId.setId(ExternalIdentifierTypeEnum.SS_UNIQUE_ID.getIdentificationId());
+            xdsSubmissionSet_uniqueId.setId(UUID.randomUUID().toString());
             xdsSubmissionSet_uniqueId.setIdentificationScheme(ExternalIdentifierTypeEnum.SS_UNIQUE_ID.getIdentificationScheme());
             xdsSubmissionSet_uniqueId.setName(makeInternationalStringType(ExternalIdentifierTypeEnum.SS_UNIQUE_ID.getLocalizedString()));
 
@@ -385,21 +440,22 @@ public class DirectDocuments {
             ExternalIdentifierType xdsSubmissionSet_sourceId = new ExternalIdentifierType();
             xdsSubmissionSet_sourceId.setValue(sourceId);
             xdsSubmissionSet_sourceId.setRegistryObject(id);
-            xdsSubmissionSet_sourceId.setId(ExternalIdentifierTypeEnum.SS_SOURCE_ID.getIdentificationId());
+            xdsSubmissionSet_sourceId.setId(UUID.randomUUID().toString());
             xdsSubmissionSet_sourceId.setIdentificationScheme(ExternalIdentifierTypeEnum.SS_SOURCE_ID.getIdentificationScheme());
             xdsSubmissionSet_sourceId.setName(makeInternationalStringType(ExternalIdentifierTypeEnum.SS_SOURCE_ID.getLocalizedString()));
 
             rpt.getExternalIdentifier().add(xdsSubmissionSet_sourceId);
 
-            // patientId
-            ExternalIdentifierType xdsSubmissionSet_patientId = new ExternalIdentifierType();
-            xdsSubmissionSet_patientId.setValue(patientId);
-            xdsSubmissionSet_patientId.setRegistryObject(id);
-            xdsSubmissionSet_patientId.setId(ExternalIdentifierTypeEnum.SS_PATIENT_ID.getIdentificationId());
-            xdsSubmissionSet_patientId.setIdentificationScheme(ExternalIdentifierTypeEnum.SS_PATIENT_ID.getIdentificationScheme());
-            xdsSubmissionSet_patientId.setName(makeInternationalStringType(ExternalIdentifierTypeEnum.SS_PATIENT_ID.getLocalizedString()));
-
-            rpt.getExternalIdentifier().add(xdsSubmissionSet_patientId);
+            // patientId — omit when not known (R2 in XDR minimal metadata)
+            if (patientId != null) {
+                ExternalIdentifierType xdsSubmissionSet_patientId = new ExternalIdentifierType();
+                xdsSubmissionSet_patientId.setValue(patientId);
+                xdsSubmissionSet_patientId.setRegistryObject(id);
+                xdsSubmissionSet_patientId.setId(UUID.randomUUID().toString());
+                xdsSubmissionSet_patientId.setIdentificationScheme(ExternalIdentifierTypeEnum.SS_PATIENT_ID.getIdentificationScheme());
+                xdsSubmissionSet_patientId.setName(makeInternationalStringType(ExternalIdentifierTypeEnum.SS_PATIENT_ID.getLocalizedString()));
+                rpt.getExternalIdentifier().add(xdsSubmissionSet_patientId);
+            }
 
             return rpt;
         }
@@ -408,7 +464,7 @@ public class DirectDocuments {
             ClassificationType ct = new ClassificationType();
 
             ct.setClassifiedObject(id);
-            ct.setId(ClassificationTypeEnum.SS.getClassificationId());
+            ct.setId(UUID.randomUUID().toString());
             ct.setClassificationScheme(ClassificationTypeEnum.SS.getClassificationScheme());
 
             return ct;
@@ -419,7 +475,7 @@ public class DirectDocuments {
 
             at.setSourceObject(id);
             at.setTargetObject(documentId);
-            at.setId(AssociationType1Enum.HAS_MEMBER.getAssociationId());
+            at.setId(UUID.randomUUID().toString());
             at.setAssociationType(AssociationType1Enum.HAS_MEMBER.getAssociationType());
 
             List<SlotType1> slots = at.getSlot();

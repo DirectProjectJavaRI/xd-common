@@ -35,21 +35,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.servlet.ServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.servlet.ServletRequest;
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPEnvelope;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPHeader;
-import javax.xml.soap.SOAPHeaderElement;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.soap.SOAPPart;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.SOAPHandler;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
+import jakarta.xml.soap.SOAPBody;
+import jakarta.xml.soap.SOAPElement;
+import jakarta.xml.soap.SOAPEnvelope;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPHeader;
+import jakarta.xml.soap.SOAPHeaderElement;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPPart;
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPHandler;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.soap.type.MetadataLevelEnum;
@@ -121,13 +121,10 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
             if (outbound)
             {
                 log.info("Handling an outbound message");
-                
-                boolean isACK = !context.containsKey(ENDPOINT_ADDRESS);
-                
-                SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().getId());
+
+                SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().threadId());
 
                 SOAPMessage msg = ((SOAPMessageContext) context).getMessage();
-                dumpSOAPMessage(msg);
                 SOAPPart sp = msg.getSOAPPart();
 
                 // edit Envelope
@@ -144,6 +141,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
                     if (threadData.getAction() != null)
                     {
+                        log.debug("Adding Action header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "Action");
                         SOAPHeaderElement saction = sh.addHeaderElement(qname);
                         boolean must = true;
@@ -153,12 +151,14 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     }
                     if (threadData.getRelatesTo() != null)
                     {
+                        log.debug("Adding RelatesTo header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "RelatesTo");
                         SOAPHeaderElement relates = sh.addHeaderElement(qname);
                         relates.setValue(threadData.getRelatesTo());
                     }
                     if (threadData.getFrom() != null)
                     {
+                        log.debug("Adding From header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "From");
                         QName child = new QName("http://www.w3.org/2005/08/addressing", "Address");
                         SOAPHeaderElement efrom = sh.addHeaderElement(qname);
@@ -167,12 +167,14 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     }
                     if (threadData.getMessageId() != null)
                     {
+                        log.debug("Adding MessageID header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "MessageID");
                         SOAPHeaderElement message = sh.addHeaderElement(qname);
                         message.setValue(threadData.getMessageId());
                     }
                     if (threadData.getTo() != null)
                     {
+                        log.debug("Adding To header");
                         QName qname = new QName("http://www.w3.org/2005/08/addressing", "To");
                         SOAPHeaderElement sto = sh.addHeaderElement(qname);
                         sto.setValue(threadData.getTo());
@@ -185,6 +187,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
                     if (StringUtils.isNotBlank(threadData.getDirectFrom()))
                     {
+                        log.debug("Adding direct:addressBlock/from header");
                         SOAPElement directFromElement = directHeader.addChildElement(new QName("urn:direct:addressing", "from"));
                         directFromElement.setPrefix("direct");
                         URI uri = new URI(threadData.getDirectFrom());
@@ -193,6 +196,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
                     if (StringUtils.isNotBlank(threadData.getDirectTo()))
                     {
+                        log.debug("Adding direct:addressBlock/to header");
                         /**
                          * consider multiple recipients
                          */
@@ -205,6 +209,23 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                         }
                     }
 
+                    if (StringUtils.isNotBlank(threadData.getNotificationRelatesTo()))
+                    {
+                        log.debug("Adding direct:addressBlock/notification header");
+                        SOAPElement directNotificationElement = directHeader.addChildElement(new QName("urn:direct:addressing", "notification"));
+                        directNotificationElement.setPrefix("direct");
+                        directNotificationElement.addAttribute(new QName("relatesTo"), threadData.getNotificationRelatesTo());
+                    }
+
+                    if (StringUtils.isNotBlank(threadData.getFinalDestinationDelivery()))
+                    {
+                        log.debug("Adding direct:addressBlock/X-DIRECT-FINAL-DESTINATION-DELIVERY header");
+                        SOAPElement directFinalDestinationDeliveryElement = directHeader.addChildElement(
+                                new QName("urn:direct:addressing", "X-DIRECT-FINAL-DESTINATION-DELIVERY"));
+                        directFinalDestinationDeliveryElement.setPrefix("direct");
+                        directFinalDestinationDeliveryElement.setValue(threadData.getFinalDestinationDelivery());
+                    }
+
                     SOAPElement directMetadataLevelElement = directHeader.addChildElement(new QName("urn:direct:addressing", "metadata-level"));
                     directMetadataLevelElement.setPrefix("direct");
                     directMetadataLevelElement.setValue(MetadataLevelEnum.MINIMAL.getLevel());
@@ -215,10 +236,30 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                         log.error("Failed to write SOAP Header: " + tb.getMessage());
                     }
                 }
-                if (isACK){
-                    SafeThreadData.clean(Thread.currentThread().getId());
+
+                try
+                {
+                    // saveRequired() is not reliable here: the header elements above were
+                    // added directly to the envelope's DOM (env.addHeader()/addHeaderElement()),
+                    // which does not flip SAAJ's internal dirty flag. saveChanges() must be
+                    // called unconditionally so the cached message bytes get re-serialized
+                    // from the envelope; otherwise writeTo() re-emits a stale, pre-header copy.
+                    msg.saveChanges();
                 }
-                
+                catch (SOAPException se)
+                {
+                    log.warn("Unable to save SOAP message changes.", se);
+                }
+
+                dumpSOAPMessage(msg);
+
+                // Defensive cleanup: the header data has already been read out of
+                // SafeThreadData and written into the message above, so this thread's
+                // entry is no longer needed. Clean it here rather than relying on every
+                // caller to clean up after itself, since this is a static map keyed by
+                // a reused thread ID (see Issue 249 / XDR-MULTIPLE-RECIPIENT-ISSUE).
+                SafeThreadData.clean(Thread.currentThread().threadId());
+
             }
             else
             {
@@ -231,10 +272,10 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                     // Issue 249 - before handling the inbound case, we should clear 
                     // out the old thread data if we don't this the To: (SMTP recipients) will 
                     // append from the previous thread data 
-                    SafeThreadData.clean(Thread.currentThread().getId());
+                    SafeThreadData.clean(Thread.currentThread().threadId());
                 }
                 
-                SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().getId());
+                SafeThreadData threadData = SafeThreadData.GetThreadInstance(Thread.currentThread().threadId());
                 
                 ServletRequest sr = (ServletRequest) context.get(MessageContext.SERVLET_REQUEST);
                 if (sr != null)
@@ -250,26 +291,25 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                 SOAPEnvelope env = sp.getEnvelope();
                 SOAPHeader sh = env.getHeader();
 
-                @SuppressWarnings("unchecked")
-                Iterator<Node> it = sh.extractAllHeaderElements();
+                Iterator<SOAPHeaderElement> it = sh.extractAllHeaderElements();
                 while (it.hasNext())
                 {
                     try{
                         Node header = it.next();
 
-                        if (StringUtils.contains(header.toString(), "MessageID"))
+                        if (StringUtils.contains(header.getNodeName(), "MessageID"))
                             {
                                 threadData.setMessageId(header.getTextContent());
                             }
-                            else if (StringUtils.contains(header.toString(), "Action"))
+                            else if (StringUtils.contains(header.getNodeName(), "Action"))
                             {
                                 threadData.setAction(header.getTextContent());
                             }
-                            else if (StringUtils.contains(header.toString(), "RelatesTo"))
+                            else if (StringUtils.contains(header.getNodeName(), "RelatesTo"))
                             {
                                 threadData.setRelatesTo(header.getTextContent());
                             }
-                            else if (StringUtils.contains(header.toString(), "ReplyTo"))
+                            else if (StringUtils.contains(header.getNodeName(), "ReplyTo"))
                             {
                                 NodeList reps = header.getChildNodes();
                                 for (int i = 0; i < reps.getLength(); i++)
@@ -281,7 +321,7 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                                     }
                                 }
                             }
-                        else if (StringUtils.contains(header.toString(), "From"))
+                        else if (StringUtils.contains(header.getNodeName(), "From"))
                         {
                             NodeList reps = header.getChildNodes();
                             for (int i = 0; i < reps.getLength(); i++)
@@ -293,11 +333,11 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                                 }
                             }
                         }
-                        else if (StringUtils.contains(header.toString(), "To")) // must be after ReplyTo
+                        else if (StringUtils.contains(header.getNodeName(), "To")) // must be after ReplyTo
                             {
                                 threadData.setTo(header.getTextContent());
                             }
-                        else if (StringUtils.contains(header.toString(), "addressBlock"))
+                        else if (StringUtils.contains(header.getNodeName(), "addressBlock"))
                         {
                             NodeList childNodes = header.getChildNodes();
 
@@ -305,7 +345,11 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                             {
                                 Node node = childNodes.item(i);
 
-                                if (StringUtils.contains(node.getNodeName(), "from"))
+                                if (StringUtils.contains(node.getNodeName(), "X-DIRECT-FINAL-DESTINATION-DELIVERY"))
+                                {
+                                    threadData.setFinalDestinationDelivery(node.getTextContent());
+                                }
+                                else if (StringUtils.contains(node.getNodeName(), "from"))
                                 {
                                     threadData.setDirectFrom(node.getTextContent());
                                 }
@@ -338,6 +382,8 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
                         }
                     }
                 }
+
+                dumpSOAPMessage(msg);
 
                 threadData.save();
             }
@@ -403,24 +449,26 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
             return;
         }
 
-        log.info("");
-        log.info("--------------------");
-        log.info(" DUMP OF SOAP MESSAGE");
-        log.info("--------------------");
-
-        try
+        if (log.isDebugEnabled())
         {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            msg.writeTo(baos);
-            log.info(baos.toString(getMessageEncoding(msg)));
-
-            // show included values
-            String values = msg.getSOAPBody().getTextContent();
-            log.trace("Included values:" + values);
-        }
-        catch (Exception e)
-        {
-            log.warn("Unable to dump soap message.", e);
+	        try
+	        {
+	            log.debug("");
+	            log.debug("--------------------");
+	            log.debug(" DUMP OF SOAP MESSAGE");
+	            log.debug("--------------------");
+	        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            msg.writeTo(baos);
+	            log.info(baos.toString(getMessageEncoding(msg)));
+	
+	            // show included values
+	            String values = msg.getSOAPBody().getTextContent();
+	            log.trace("Included values:" + values);
+	        }
+	        catch (Exception e)
+	        {
+	            log.warn("Unable to dump soap message.", e);
+	        }
         }
     }
 
@@ -445,9 +493,8 @@ public class DirectSOAPHandler implements SOAPHandler<SOAPMessageContext>
 
         try
         {
-            @SuppressWarnings("unused")
             SOAPMessage msg = ((SOAPMessageContext) context).getMessage();
-            // dumpSOAPMessage(msg);
+            dumpSOAPMessage(msg);
 
             if (context.getMessage().getSOAPBody().getFault() != null)
             {

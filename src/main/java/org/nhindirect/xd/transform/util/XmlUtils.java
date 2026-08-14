@@ -31,9 +31,9 @@ package org.nhindirect.xd.transform.util;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +64,7 @@ public class XmlUtils
 
         try
         {
-            javax.xml.bind.JAXBContext jc = javax.xml.bind.JAXBContext.newInstance(factory);
+        	jakarta.xml.bind.JAXBContext jc = jakarta.xml.bind.JAXBContext.newInstance(factory);
             Marshaller u = jc.createMarshaller();
 
             StringWriter sw = new StringWriter();
@@ -92,11 +92,11 @@ public class XmlUtils
      */
     public static Object unmarshal(String xml, Class<?> factory) throws JAXBException
     {
-        javax.xml.bind.JAXBContext jaxbCtx = null;
+    	jakarta.xml.bind.JAXBContext jaxbCtx = null;
 
         try
         {
-            jaxbCtx = javax.xml.bind.JAXBContext.newInstance(factory);
+            jaxbCtx = jakarta.xml.bind.JAXBContext.newInstance(factory);
         }
         catch (JAXBException e)
         {
@@ -117,7 +117,7 @@ public class XmlUtils
      *            The JAXBContext object.
      * @return an object representation of the string.
      */
-    private static Object unmarshal(String xml, javax.xml.bind.JAXBContext jaxbCtx)
+    private static Object unmarshal(String xml, jakarta.xml.bind.JAXBContext jaxbCtx)
     {
         Object ret = null;
 
@@ -126,7 +126,7 @@ public class XmlUtils
             byte currentXMLBytes[] = xml.getBytes();
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(currentXMLBytes);
 
-            javax.xml.bind.Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
+            jakarta.xml.bind.Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
             ret = unmarshaller.unmarshal(byteArrayInputStream);
         }
         catch (Exception ex)

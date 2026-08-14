@@ -1,7 +1,6 @@
 package org.nhindirect.xd.common;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.File;
 
@@ -20,19 +19,19 @@ import org.nhindirect.config.repository.TrustBundleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = WebEnvironment.DEFINED_PORT)
+@AutoConfigureRestTestClient
 @TestPropertySource("classpath:bootstrap.properties")
 public abstract class SpringBaseTest
 {
 	protected String filePrefix;
 	
 	@Autowired
-	protected TestRestTemplate testRestTemplate;
+	protected RestTestClient restTestClient;
 	
 	@Autowired
 	protected AddressRepository addressRepo;

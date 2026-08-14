@@ -16,7 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nhindirect.xd.transform.util.type.MimeType;
@@ -28,11 +28,9 @@ public class XdmPackage {
 
     private String messageId;
     private DirectDocuments documents;
-    @Deprecated
-    private static final String SUFFIX = ".xml";
     private static final int BUFFER = 2048;
     private static final String XDM_SUB_FOLDER = "IHE_XDM/SUBSET01";
-    private static final String XDM_METADATA_FILE = "METADATA.xml";
+    private static final String XDM_METADATA_FILE = "METADATA.XML";
 
     public XdmPackage() {
         this(UUID.randomUUID().toString());
@@ -62,26 +60,33 @@ public class XdmPackage {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(dest));
             zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
 
+            // Explicit directory entries are required so that readers which look for the
+            // submission set folder as its own zip record (rather than inferring it from
+            // file paths) can find it, even though the folder is otherwise implied by the
+            // file entries added below.
+            addDirectoryEntry(zipOutputStream, "IHE_XDM/");
+            addDirectoryEntry(zipOutputStream, XDM_SUB_FOLDER + "/");
+
+            int docIndex = 0;
             for (DirectDocument2 document : documents.getDocuments()) {
                 if (document.getData() != null) {
-                    String fileName = document.getMetadata().getId() ;
-                    fileName = fileName.replace("urn:uuid:", "");
-                    fileName = fileName + getSuffix(document.getMetadata().getMimeType());
-                  
-                    document.getMetadata().setURI(fileName);
-                    addEntry(zipOutputStream, document.getData(), XDM_SUB_FOLDER + fileName );
+                    String fileName = document.getMetadata().getURI();
+                    if (StringUtils.isBlank(fileName)) {
+                        docIndex++;
+                        // IHE XDM requires 8.3-style names (upper case, digits, or '_', max 8
+                        // chars before the extension) for entries under IHE_XDM/SUBSET01
+                        fileName = String.format("DOC%05d", docIndex) + getSuffix(document.getMetadata().getMimeType());
+                        document.getMetadata().setURI(fileName);
+                    }
+                    addEntry(zipOutputStream, document.getData(), XDM_SUB_FOLDER + "/" + fileName);
                 }
             }
 
-            addEntry(zipOutputStream, documents.getSubmitObjectsRequestAsString().getBytes(), XDM_SUB_FOLDER + XDM_METADATA_FILE);
+            addEntry(zipOutputStream, documents.getSubmitObjectsRequestAsString().getBytes(), XDM_SUB_FOLDER + "/" + XDM_METADATA_FILE);
 
-            addEntry(zipOutputStream, getIndex().getBytes(), "INDEX.htm");
+            addEntry(zipOutputStream, getIndex().getBytes(), "INDEX.HTM");
 
-            addEntry(zipOutputStream, getReadme().getBytes(), "README.txt");
-
-            if (SUFFIX.equals(".xml")) {
-                addEntry(zipOutputStream, getXsl().getBytes(), XDM_SUB_FOLDER + "CCD.xsl");
-            }
+            addEntry(zipOutputStream, getReadme().getBytes(), "README.TXT");
 
             zipOutputStream.close();
         } catch (Exception e) {
@@ -89,6 +94,12 @@ public class XdmPackage {
         }
 
         return xdmFile;
+    }
+
+    private void addDirectoryEntry(ZipOutputStream zipOutputStream, String dirName) throws IOException {
+        ZipEntry dirEntry = new ZipEntry(dirName);
+        zipOutputStream.putNextEntry(dirEntry);
+        zipOutputStream.closeEntry();
     }
 
     private void addEntry(ZipOutputStream zipOutputStream, byte[] data, String fileName) throws IOException {
@@ -119,7 +130,7 @@ public class XdmPackage {
 
             for (DirectDocument2 document : documents.getDocuments()) {
                 if (document.getData() != null) {
-                    String file = XDM_SUB_FOLDER + document.getMetadata().getId() + getSuffix(document.getMetadata().getMimeType());
+                    String file = XDM_SUB_FOLDER + "/" + document.getMetadata().getURI();
                     data += "<li><a href=\"" + file + "\">" + file + "</a> - " + document.getMetadata().getDescription() + "</li>";
                 }
             }
@@ -151,24 +162,8 @@ public class XdmPackage {
         return new String(bytes);
     }
 
-    /*
-     * Get the xsl file.
-     */
-    public String getXsl() throws Exception {
-        byte[] bytes;
 
-        try {
-            bytes = readFile("CCD.xsl");
-        } catch (Exception e) {
-            log.error("Unable to access xsl file.", e);
-            throw e;
-        }
-
-        return new String(bytes);
-
-    }
-
-    public static XdmPackage fromXdmZipDataHandler(DataHandler dataHandler) throws Exception {
+    public static XdmPackage fromXdmZipDataHandler(DataHandler dataHandler, SyntheticMetadataDefaults syntheticDefaults) throws Exception {
         File file = null;
 
         try {
@@ -181,7 +176,7 @@ public class XdmPackage {
             throw new Exception("Error creating temporary work file, unable to complete transformation.", e);
         }
 
-        XdmPackage xdmPackage = fromXdmZipFile(file);
+        XdmPackage xdmPackage = fromXdmZipFile(file, syntheticDefaults);
 
         boolean delete = file.delete();
 
@@ -198,8 +193,8 @@ public class XdmPackage {
         return xdmPackage;
     }
 
-    public static XdmPackage fromXdmZipFile(File file) throws Exception {
-        DirectDocuments documents = new DirectDocuments();
+    public static XdmPackage fromXdmZipFile(File file, SyntheticMetadataDefaults syntheticDefaults) throws Exception {
+        DirectDocuments documents = new DirectDocuments(syntheticDefaults);
 
         ZipFile zipFile = new ZipFile(file, ZipFile.OPEN_READ);
 
@@ -239,17 +234,29 @@ public class XdmPackage {
 
                 // Read data
               //  if (StringUtils.contains(subsetDirspec, StringUtils.remove(XDM_SUB_FOLDER, "/"))
-                if (StringUtils.contains(subsetDirspec,XDM_SUB_FOLDER)
-                        && !StringUtils.contains(zname, ".xsl") && !StringUtils.contains(zname, XDM_METADATA_FILE)) {
+                if (StringUtils.containsIgnoreCase(subsetDirspec, XDM_SUB_FOLDER)
+                        && !StringUtils.containsIgnoreCase(zname, ".xsl")
+                        && !StringUtils.containsIgnoreCase(zname, XDM_METADATA_FILE)) {
                     ByteArrayOutputStream byteArrayOutputStream = readData(zipFile, zipEntry);
 
-                    String digest = DirectDocument2.getSha1Hash(byteArrayOutputStream.toString());
-                    System.out.println(digest);
+                    // Try hash-based lookup first
+                    String digest = DirectDocument2.getSha1Hash(byteArrayOutputStream.toByteArray());
                     DirectDocument2 document = documents.getDocumentByHash(digest);
 
+                    // Fall back to URI-based lookup using the filename portion of the zip entry
                     if (document == null) {
-                        log.warn("Unable to find metadata for document by hash. Creating document with no supporting metadata.");
+                        String fileName = zname.substring(zname.lastIndexOf('/') + 1);
+                        for (DirectDocument2 doc : documents.getDocuments()) {
+                            String uri = doc.getMetadata().getURI();
+                            if (uri != null && StringUtils.equalsIgnoreCase(fileName, uri)) {
+                                document = doc;
+                                break;
+                            }
+                        }
+                    }
 
+                    if (document == null) {
+                        log.warn("Unable to find metadata for document by hash or URI. Creating document with no supporting metadata.");
                         document = new DirectDocument2();
                         documents.getDocuments().add(document);
                     }
@@ -260,6 +267,16 @@ public class XdmPackage {
         }
 
         zipFile.close();
+
+        // Clear relative URIs (XDM package filenames like "CCDAAMB.XML") now that data has been
+        // loaded. They are not valid absolute URLs in XDR submissions. This must happen AFTER the
+        // data-loading loop, which uses the URI slot for filename matching.
+        for (DirectDocument2 document : documents.getDocuments()) {
+            String uri = document.getMetadata().getURI();
+            if (uri != null && !uri.startsWith("http://") && !uri.startsWith("https://")) {
+                document.getMetadata().setURI(null);
+            }
+        }
 
         XdmPackage xdmPackage = new XdmPackage();
         xdmPackage.setDocuments(documents);
@@ -307,11 +324,8 @@ public class XdmPackage {
    protected static  boolean matchName(String zname, String subsetDirspec, String subsetFilespec) {
         zname = zname.replaceAll("\\\\", "/");
         String zipFilespec = subsetDirspec + "/" + subsetFilespec;
-        boolean ret = StringUtils.equals(zname, zipFilespec);
-
-
-        return ret;
-    }     
+        return StringUtils.equalsIgnoreCase(zname, zipFilespec);
+    }
       
     /**
      * Determine whether a filename matches the subset directory and file name.
@@ -420,6 +434,6 @@ public class XdmPackage {
     }
 
     private String getSuffix(String mimeType) {
-        return "." + MimeType.lookup(mimeType).getSuffix();
+        return "." + MimeType.lookup(mimeType).getSuffix().toUpperCase();
     }
 }

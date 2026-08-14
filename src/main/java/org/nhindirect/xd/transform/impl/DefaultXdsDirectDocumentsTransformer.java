@@ -5,7 +5,7 @@ import ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import org.nhindirect.xd.common.DirectDocument2;
 import org.nhindirect.xd.common.DirectDocuments;
