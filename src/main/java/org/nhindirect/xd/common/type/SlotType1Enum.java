@@ -54,7 +54,8 @@ public enum SlotType1Enum
     SUBMISSION_SET_STATUS("SubmissionSetStatus"),
     HASH("hash"),
     SIZE("size"),
-    URI("URI");
+    URI("URI"),
+    REFERENCE_ID_LIST("urn:ihe:iti:xds:2013:referenceIdList");
 
     private String name;
 

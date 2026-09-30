@@ -40,7 +40,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import jakarta.activation.DataHandler;
@@ -67,6 +69,7 @@ import org.nhindirect.xd.common.type.ClassificationTypeEnum;
 import org.nhindirect.xd.common.type.ExternalIdentifierTypeEnum;
 import org.nhindirect.xd.common.type.SlotType1Enum;
 import org.nhindirect.xd.common.type.SubmitObjectsRequestEnum;
+import org.nhindirect.xd.transform.pojo.SimplePerson;
 import org.nhindirect.xd.transform.util.XmlUtils;
 
 /**
@@ -379,8 +382,85 @@ public class DirectDocuments {
         private String sourceId;
         private String patientId;
 
+        // optional, opt-in metadata (nothing is emitted for a field that is not set)
+        private String availabilityStatus;
+        private String sourcePatientId;
+        private SimplePerson sourcePatient;
+        private List<String> referenceIdList = new ArrayList<String>();
+        private Map<String, List<String>> extraSlots = new LinkedHashMap<String, List<String>>();
+        private String contentTypeCodingScheme;
+
         public SubmissionSet() {
             this.id = "SubmissionSet01";
+        }
+
+        /**
+         * @return the registry object status, e.g. urn:oasis:names:tc:ebxml-regrep:StatusType:Approved
+         */
+        public String getAvailabilityStatus() {
+            return availabilityStatus;
+        }
+
+        /**
+         * @param availabilityStatus
+         *            the registry object status to set on the RegistryPackage; not emitted when null
+         */
+        public void setAvailabilityStatus(String availabilityStatus) {
+            this.availabilityStatus = availabilityStatus;
+        }
+
+        /**
+         * @return the source patient id in CX format, e.g. 123^^^&amp;1.2.3&amp;ISO
+         */
+        public String getSourcePatientId() {
+            return sourcePatientId;
+        }
+
+        /**
+         * @param sourcePatientId
+         *            the patient identifier known to the sender in CX format; emitted as a SubmissionSet slot
+         */
+        public void setSourcePatientId(String sourcePatientId) {
+            this.sourcePatientId = sourcePatientId;
+        }
+
+        public SimplePerson getSourcePatient() {
+            return sourcePatient;
+        }
+
+        /**
+         * @param sourcePatient
+         *            demographics of the patient known to the sender; emitted as the sourcePatientInfo slot
+         */
+        public void setSourcePatient(SimplePerson sourcePatient) {
+            this.sourcePatient = sourcePatient;
+        }
+
+        /**
+         * @return the referenceIdList entries in CXi format, e.g. 123^^^&amp;1.2.3&amp;ISO^urn:ihe:iti:xds:2013:referral
+         */
+        public List<String> getReferenceIdList() {
+            return referenceIdList;
+        }
+
+        /**
+         * @return additional (extra metadata attribute) slots keyed by slot name. IHE ITI Vol 2 4.2.3.1.6 requires
+         *         custom attribute names to be URNs.
+         */
+        public Map<String, List<String>> getExtraSlots() {
+            return extraSlots;
+        }
+
+        public String getContentTypeCodingScheme() {
+            return contentTypeCodingScheme;
+        }
+
+        /**
+         * @param contentTypeCodingScheme
+         *            overrides the default coding scheme name emitted for the contentTypeCode
+         */
+        public void setContentTypeCodingScheme(String contentTypeCodingScheme) {
+            this.contentTypeCodingScheme = contentTypeCodingScheme;
         }
 
         protected RegistryPackageType generateRegistryPackageType() {
@@ -388,9 +468,20 @@ public class DirectDocuments {
 
             rpt.setId(id);
 
+            if (availabilityStatus != null)
+                rpt.setStatus(availabilityStatus);
+
             List<SlotType1> slots = rpt.getSlot();
             addSlot(slots, makeSlot(SlotType1Enum.SUBMISSION_TIME, submissionTime != null ? (new SimpleDateFormat("yyyyMMddHHmmss")).format(submissionTime) : null));
             addSlot(slots, makeSlot(SlotType1Enum.INTENDED_RECIPIENT, intendedRecipient));
+            if (sourcePatientId != null)
+                addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_ID, sourcePatientId));
+            if (sourcePatient != null)
+                addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_INFO, sourcePatient));
+            if (!referenceIdList.isEmpty())
+                addSlot(slots, makeSlot(SlotType1Enum.REFERENCE_ID_LIST, referenceIdList));
+            for (Map.Entry<String, List<String>> extra : extraSlots.entrySet())
+                addSlot(slots, DirectDocumentUtils.makeSlot(extra.getKey(), extra.getValue()));
 
             rpt.setName(makeInternationalStringType(name));
             rpt.setDescription(makeInternationalStringType(description));
@@ -409,7 +500,9 @@ public class DirectDocuments {
             addSlot(authorClassificationSlots, makeSlot(SlotType1Enum.AUTHOR_SPECIALTY, authorSpecialty));
             addSlot(authorClassificationSlots, makeSlot(SlotType1Enum.AUTHOR_TELECOMMUNICATION, authorTelecommunication));
 
-            rpt.getClassification().add(authorClassification);
+            // an author classification with no author information at all is meaningless, so only add it when populated
+            if (!authorClassificationSlots.isEmpty())
+                rpt.getClassification().add(authorClassification);
 
             // contentTypeCode — omit when code is not known
             if (contentTypeCode != null) {
@@ -421,7 +514,8 @@ public class DirectDocuments {
                 contentTypeCodeClassification.setClassificationScheme(ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getClassificationScheme());
 
                 List<SlotType1> contentTypeCodeClassificationSlots = contentTypeCodeClassification.getSlot();
-                addSlot(contentTypeCodeClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME, ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getCodingScheme()));
+                addSlot(contentTypeCodeClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME,
+                        contentTypeCodingScheme != null ? contentTypeCodingScheme : ClassificationTypeEnum.SS_CONTENT_TYPE_CODE.getCodingScheme()));
 
                 rpt.getClassification().add(contentTypeCodeClassification);
             }
@@ -465,7 +559,9 @@ public class DirectDocuments {
 
             ct.setClassifiedObject(id);
             ct.setId(UUID.randomUUID().toString());
-            ct.setClassificationScheme(ClassificationTypeEnum.SS.getClassificationScheme());
+            // XDS.b identifies a RegistryPackage as a SubmissionSet with a classificationNode; the value held in
+            // the enum is that node's UUID
+            ct.setClassificationNode(ClassificationTypeEnum.SS.getClassificationScheme());
 
             return ct;
         }

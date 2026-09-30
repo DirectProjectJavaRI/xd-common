@@ -206,6 +206,113 @@ public class DirectDocument2
             this.submissionSetStatus = "Original";
         }
 
+        // optional, opt-in metadata (nothing changes for a field that is not set)
+        private String title;
+        private List<String> referenceIdList = new ArrayList<String>();
+        private java.util.Map<String, List<String>> extraSlots = new java.util.LinkedHashMap<String, List<String>>();
+        private String classCodeCodingScheme;
+        private String loincCodingScheme;
+        private String creationTimePattern = "yyyyMMdd";
+        private java.util.TimeZone timeZone;
+
+        /**
+         * @return the document title; when set it is emitted as the DocumentEntry name instead of the localized
+         *         classCode
+         */
+        public String getTitle()
+        {
+            return title;
+        }
+
+        public void setTitle(String title)
+        {
+            this.title = title;
+        }
+
+        /**
+         * @return the referenceIdList entries in CXi format, e.g. 123^^^&amp;1.2.3&amp;ISO^urn:ihe:iti:xds:2013:referral
+         */
+        public List<String> getReferenceIdList()
+        {
+            return referenceIdList;
+        }
+
+        /**
+         * @return additional (extra metadata attribute) slots keyed by slot name; names should be URNs.
+         */
+        public java.util.Map<String, List<String>> getExtraSlots()
+        {
+            return extraSlots;
+        }
+
+        public String getClassCodeCodingScheme()
+        {
+            return classCodeCodingScheme;
+        }
+
+        /**
+         * @param classCodeCodingScheme
+         *            overrides the default coding scheme emitted for the classCode
+         */
+        public void setClassCodeCodingScheme(String classCodeCodingScheme)
+        {
+            this.classCodeCodingScheme = classCodeCodingScheme;
+        }
+
+        public String getLoincCodingScheme()
+        {
+            return loincCodingScheme;
+        }
+
+        /**
+         * @param loincCodingScheme
+         *            overrides the default coding scheme (LOINC) emitted for the typeCode
+         */
+        public void setLoincCodingScheme(String loincCodingScheme)
+        {
+            this.loincCodingScheme = loincCodingScheme;
+        }
+
+        public String getCreationTimePattern()
+        {
+            return creationTimePattern;
+        }
+
+        /**
+         * @param creationTimePattern
+         *            the SimpleDateFormat pattern used for creationTime; defaults to yyyyMMdd
+         */
+        public void setCreationTimePattern(String creationTimePattern)
+        {
+            this.creationTimePattern = creationTimePattern;
+        }
+
+        public java.util.TimeZone getTimeZone()
+        {
+            return timeZone;
+        }
+
+        /**
+         * @param timeZone
+         *            the zone used to format creation/service times; the JVM default zone when null
+         */
+        public void setTimeZone(java.util.TimeZone timeZone)
+        {
+            this.timeZone = timeZone;
+        }
+
+        private String formatTime(Date date, String pattern)
+        {
+            if (date == null)
+                return null;
+
+            SimpleDateFormat format = new SimpleDateFormat(pattern);
+            if (timeZone != null)
+                format.setTimeZone(timeZone);
+
+            return format.format(date);
+        }
+
         /**
          * Construct a new DirectDocument2.Metadata with default values given a
          * File object.
@@ -258,13 +365,13 @@ public class DirectDocument2
             eot.setObjectType(ExtrinsicObjectTypeEnum.DOC.getObjectType());
             
             List<SlotType1> slots = eot.getSlot();
-            addSlot(slots, makeSlot(SlotType1Enum.CREATION_TIME, creationTime != null ? (new SimpleDateFormat("yyyyMMdd")).format(creationTime) : null));
+            addSlot(slots, makeSlot(SlotType1Enum.CREATION_TIME, formatTime(creationTime, creationTimePattern)));
             addSlot(slots, makeSlot(SlotType1Enum.LANGUAGE_CODE, languageCode));
-            addSlot(slots, makeSlot(SlotType1Enum.SERVICE_START_TIME, serviceStartTime != null ? (new SimpleDateFormat("yyyyMMddHHmm")).format(serviceStartTime) : null));
-            addSlot(slots, makeSlot(SlotType1Enum.SERVICE_STOP_TIME, serviceStopTime != null ? (new SimpleDateFormat("yyyyMMddHHmm")).format(serviceStopTime) : null));
+            addSlot(slots, makeSlot(SlotType1Enum.SERVICE_START_TIME, formatTime(serviceStartTime, "yyyyMMddHHmm")));
+            addSlot(slots, makeSlot(SlotType1Enum.SERVICE_STOP_TIME, formatTime(serviceStopTime, "yyyyMMddHHmm")));
             String sourcePatientIdValue = null;
             if (sourcePatient.getLocalId() != null || sourcePatient.getLocalOrg() != null) {
-                sourcePatientIdValue = sourcePatient.getLocalId() + "^^^&" + sourcePatient.getLocalOrg() + "&ISO";
+                sourcePatientIdValue = DirectDocumentUtils.toCx(sourcePatient.getLocalId(), sourcePatient.getLocalOrg());
             }
             addSlot(slots, makeSlot(SlotType1Enum.SOURCE_PATIENT_ID, sourcePatientIdValue));
             if (sourcePatient.getLocalId() != null || sourcePatient.getLocalOrg() != null) {
@@ -273,8 +380,12 @@ public class DirectDocument2
             addSlot(slots, makeSlot(SlotType1Enum.HASH, hash));
             addSlot(slots, makeSlot(SlotType1Enum.SIZE, size == null ? null : String.valueOf(size)));
             addSlot(slots, makeSlot(SlotType1Enum.URI, uri == null ? null : uri));
+            if (!referenceIdList.isEmpty())
+                addSlot(slots, makeSlot(SlotType1Enum.REFERENCE_ID_LIST, referenceIdList));
+            for (java.util.Map.Entry<String, List<String>> extra : extraSlots.entrySet())
+                addSlot(slots, DirectDocumentUtils.makeSlot(extra.getKey(), extra.getValue()));
 
-            eot.setName(makeInternationalStringType(classCode_localized));
+            eot.setName(makeInternationalStringType(title != null ? title : classCode_localized));
             eot.setDescription(makeInternationalStringType(description));
 
             // author
@@ -290,7 +401,9 @@ public class DirectDocument2
             addSlot(authorClassificationSlots, makeSlot(SlotType1Enum.AUTHOR_ROLE, authorRole));
             addSlot(authorClassificationSlots, makeSlot(SlotType1Enum.AUTHOR_SPECIALTY, authorSpecialty));
 
-            eot.getClassification().add(authorClassification);
+            // an author classification with no author information at all is meaningless, so only add it when populated
+            if (!authorClassificationSlots.isEmpty())
+                eot.getClassification().add(authorClassification);
 
             // classCode
             if (classCode != null)
@@ -303,7 +416,8 @@ public class DirectDocument2
                 classCodeClassification.setClassificationScheme(ClassificationTypeEnum.DOC_CLASS_CODE.getClassificationScheme());
     
                 List<SlotType1> classCodeClassificationSlots = classCodeClassification.getSlot();
-                addSlot(classCodeClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME, ClassificationTypeEnum.DOC_CLASS_CODE.getCodingScheme()));
+                addSlot(classCodeClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME,
+                        classCodeCodingScheme != null ? classCodeCodingScheme : ClassificationTypeEnum.DOC_CLASS_CODE.getCodingScheme()));
     
                 eot.getClassification().add(classCodeClassification);
             }
@@ -383,7 +497,8 @@ public class DirectDocument2
                 loincClassification.setClassificationScheme(ClassificationTypeEnum.DOC_LOINC.getClassificationScheme());
     
                 List<SlotType1> loincClassificationSlots = loincClassification.getSlot();
-                addSlot(loincClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME, ClassificationTypeEnum.DOC_LOINC.getCodingScheme()));
+                addSlot(loincClassificationSlots, makeSlot(SlotType1Enum.CODING_SCHEME,
+                        loincCodingScheme != null ? loincCodingScheme : ClassificationTypeEnum.DOC_LOINC.getCodingScheme()));
     
                 eot.getClassification().add(loincClassification);
             }

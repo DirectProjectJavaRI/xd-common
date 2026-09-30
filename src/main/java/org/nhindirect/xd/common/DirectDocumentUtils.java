@@ -1,6 +1,7 @@
 package org.nhindirect.xd.common;
 
 import java.util.ArrayList;
+import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 import oasis.names.tc.ebxml_regrep.xsd.rim._3.InternationalStringType;
@@ -43,34 +44,48 @@ public class DirectDocumentUtils
         vals.add(pid5.toString());
 
         // <rim:Value>PID-7|19560527</rim:Value>
-        StringBuffer pid7 = new StringBuffer("PID-7|");
-        pid7.append(person.getBirthDateTime() != null ? person.getBirthDateTime() : "");
-
-        vals.add(pid7.toString());
+        if (StringUtils.isNotEmpty(person.getBirthDateTime()))
+            vals.add("PID-7|" + person.getBirthDateTime());
         
         // <rim:Value>PID-8|M</rim:Value>
-        StringBuffer pid8 = new StringBuffer("PID-8|");
-        pid8.append(person.getGenderCode() != null ? person.getGenderCode() : "");
-
-        vals.add(pid8.toString());
+        if (StringUtils.isNotEmpty(person.getGenderCode()))
+            vals.add("PID-8|" + person.getGenderCode());
         
         // <rim:Value>PID-11|100 Main St^^Metropolis^Il^44130^USA</rim:Value>
-        StringBuffer pid11 = new StringBuffer("PID-11|");
-        pid11.append(person.getStreetAddress1() != null ? person.getStreetAddress1() : "");
-        pid11.append("^^");
-        pid11.append(person.getCity() != null ? person.getCity() : "");
-        pid11.append("^");
-        pid11.append(person.getState() != null ? person.getState() : "");
-        pid11.append("^");
-        pid11.append(person.getZipCode() != null ? person.getZipCode() : "");
-        pid11.append("^");
-        pid11.append(person.getCountry() != null ? person.getCountry() : "");
-        
-        vals.add(pid11.toString());
+        // omitted entirely when no address component is known rather than emitting an empty "^^^^^" value
+        if (StringUtils.isNotEmpty(person.getStreetAddress1()) || StringUtils.isNotEmpty(person.getCity())
+                || StringUtils.isNotEmpty(person.getState()) || StringUtils.isNotEmpty(person.getZipCode())
+                || StringUtils.isNotEmpty(person.getCountry()))
+        {
+            StringBuffer pid11 = new StringBuffer("PID-11|");
+            pid11.append(person.getStreetAddress1() != null ? person.getStreetAddress1() : "");
+            pid11.append("^^");
+            pid11.append(person.getCity() != null ? person.getCity() : "");
+            pid11.append("^");
+            pid11.append(person.getState() != null ? person.getState() : "");
+            pid11.append("^");
+            pid11.append(person.getZipCode() != null ? person.getZipCode() : "");
+            pid11.append("^");
+            pid11.append(person.getCountry() != null ? person.getCountry() : "");
+            
+            vals.add(pid11.toString());
+        }
 
         return slot;
     }
     
+    /**
+     * Builds an HL7 CX patient identifier ({@code id^^^&authority&ISO}); when no assigning authority is known only
+     * the bare identifier is returned rather than a value containing the literal text "null".
+     */
+    public static String toCx(String id, String assigningAuthority)
+    {
+        if (StringUtils.isEmpty(assigningAuthority))
+            return id;
+
+        return id + "^^^&" + assigningAuthority + "&ISO";
+    }
+
     public static SlotType1 makeSlot(SlotType1Enum slotTypeEnum, String value)
     {
         SlotType1 slot = new SlotType1();
@@ -80,6 +95,21 @@ public class DirectDocumentUtils
         slot.setName(slotTypeEnum.getName());
         slot.setValueList(valueListType);
         vals.add(value);
+
+        return slot;
+    }
+
+    /**
+     * Creates a slot with a free-form name, used for IHE extra metadata attributes whose names are URNs.
+     */
+    public static SlotType1 makeSlot(String slotName, List<String> values)
+    {
+        SlotType1 slot = new SlotType1();
+        ValueListType valueListType = new ValueListType();
+        valueListType.getValue().addAll(values);
+
+        slot.setName(slotName);
+        slot.setValueList(valueListType);
 
         return slot;
     }
